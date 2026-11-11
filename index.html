@@ -1,0 +1,2598 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾葉書房｜寫作者的陪伴空間</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-cream: #FAF8EE;
+      --bg-yellow: #FDF3C7;
+      --warm-blush: #F8E8DF;
+      --grass-light: #E4F1DF;
+      --grass-main: #CBE2C3;
+      --grass-deep: #3E5D47;
+      --mucha-gold: #B6985A;
+      --mucha-line: #8FA889;
+      --text-main: #1F3225;
+      --text-sub: #3E5544;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    /* 波浪式背景色塊緩慢搖動 */
+    @keyframes waveFloatSlow {
+      0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+      }
+      50% {
+        transform: translate3d(26px, -22px, 0) scale(1.06) rotate(2deg);
+      }
+    }
+
+    @keyframes waveFloatReverse {
+      0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+      }
+      50% {
+        transform: translate3d(-28px, 20px, 0) scale(1.05) rotate(-2deg);
+      }
+    }
+
+    .wave-blob-1 { animation: waveFloatSlow 15s ease-in-out infinite; }
+    .wave-blob-2 { animation: waveFloatReverse 19s ease-in-out infinite; }
+    .wave-blob-3 { animation: waveFloatSlow 23s ease-in-out infinite; }
+
+    /* 舞台慢速優雅過渡（不匆忙的網站） */
+    .stage-container {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.95s cubic-bezier(0.22, 1, 0.36, 1), transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+      display: none;
+    }
+
+    .stage-container.active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* 關卡0：呼吸圓球動畫 (吸氣4秒放大、吐氣4秒縮小) */
+    @keyframes gentleBreatheOrb {
+      0%, 100% {
+        transform: scale(0.85);
+        box-shadow: 0 0 50px 16px rgba(203, 226, 195, 0.58), inset 0 0 36px rgba(253, 243, 199, 0.85);
+      }
+      50% {
+        transform: scale(1.22);
+        box-shadow: 0 0 98px 34px rgba(203, 226, 195, 0.92), inset 0 0 58px rgba(253, 243, 199, 0.98);
+      }
+    }
+
+    .breathing-orb {
+      animation: gentleBreatheOrb 8s ease-in-out infinite;
+      border-radius: 9999px;
+      transition: opacity 0.95s ease, transform 0.95s ease;
+    }
+
+    /* 茶香文字如香味緩緩浮升到畫面之外 */
+    @keyframes aromaRiseOut {
+      0% {
+        opacity: 0;
+        transform: translateY(28px) scale(0.96);
+        filter: blur(2px);
+      }
+      26% {
+        opacity: 1;
+        transform: translateY(0px) scale(1);
+        filter: blur(0px);
+      }
+      65% {
+        opacity: 1;
+        transform: translateY(-30px) scale(1.02);
+        filter: blur(0px);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-145px) scale(1.06);
+        filter: blur(5px);
+      }
+    }
+
+    .aroma-floating {
+      animation: aromaRiseOut 3.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* WotC 慕夏新藝術卡牌翻牌 3D 特效 */
+    .wotc-card-perspective {
+      perspective: 1200px;
+    }
+
+    .wotc-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.95s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease;
+      border-radius: 28px;
+    }
+
+    .wotc-card-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .wotc-card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 28px;
+      overflow: hidden;
+    }
+
+    .wotc-card-back {
+      transform: rotateY(0deg);
+    }
+
+    .wotc-card-front {
+      transform: rotateY(180deg);
+    }
+
+    /* 抽牌上升與重抽沉降動畫 */
+    @keyframes cardDealRise {
+      0% {
+        opacity: 0;
+        transform: translateY(56px) scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card-dealing {
+      animation: cardDealRise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes cardRedrawSink {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        opacity: 0;
+        transform: translateY(42px) scale(0.92);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .card-redrawing {
+      animation: cardRedrawSink 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* 扭蛋掉落彈跳動畫 */
+    @keyframes capsuleDropBounce {
+      0% {
+        transform: translateY(-130px) scale(0.5);
+        opacity: 0;
+      }
+      55% {
+        transform: translateY(12px) scale(1.06);
+        opacity: 1;
+      }
+      78% {
+        transform: translateY(-8px) scale(0.97);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+
+    .capsule-dropping {
+      animation: capsuleDropBounce 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* 幸運籤餅紙條緩緩展開 */
+    @keyframes slipUnfold {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scaleX(0.88);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scaleX(1);
+      }
+    }
+
+    .fortune-slip-unfold {
+      animation: slipUnfold 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* 水滴澆灌小樹苗動畫 */
+    @keyframes waterDropFall {
+      0% {
+        opacity: 1;
+        transform: translateY(-45px) scale(0.7);
+      }
+      70% {
+        opacity: 1;
+        transform: translateY(15px) scale(1.1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(28px) scale(0.3);
+      }
+    }
+
+    .water-drop-anim {
+      animation: waterDropFall 1.1s ease-in-out forwards;
+    }
+
+    /* 關卡5：結尾單字 4 秒淡入 / 4 秒淡出特效 */
+    .char-cell {
+      display: inline-block;
+      transition: opacity 4s ease-in-out, transform 4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* 全面圓角無銳角按鈕 */
+    .pill-btn {
+      border-radius: 9999px;
+      transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .pill-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(62, 93, 71, 0.15);
+    }
+    .pill-btn:active:not(:disabled) {
+      transform: translateY(0px);
+    }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #FAF8EE; }
+    ::-webkit-scrollbar-thumb { background: #CBE2C3; border-radius: 9999px; }
+  </style>
+</head>
+<body class="relative flex flex-col justify-between min-h-screen selection:bg-[#CBE2C3] selection:text-[#1F3225]">
+
+  <!-- 波浪式搖動漸層色塊背景（鵝黃、草綠、暖粉米色，全面圓潤無銳角） -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="wave-blob-1 absolute -top-28 -left-24 w-[32rem] h-[32rem] rounded-full bg-gradient-to-br from-[#FDF3C7]/85 to-[#F8E8DF]/65 blur-3xl"></div>
+    <div class="wave-blob-2 absolute top-1/4 -right-32 w-[36rem] h-[36rem] rounded-full bg-gradient-to-bl from-[#CBE2C3]/75 to-[#E4F1DF]/75 blur-3xl"></div>
+    <div class="wave-blob-3 absolute -bottom-32 left-1/4 w-[34rem] h-[34rem] rounded-full bg-gradient-to-tr from-[#E4F1DF]/80 via-[#FDF3C7]/60 to-[#F8E8DF]/60 blur-3xl"></div>
+
+    <!-- 底部緩慢搖擺的圓潤波浪 SVG -->
+    <svg class="absolute bottom-0 left-0 w-full h-44 opacity-45" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="#CBE2C3" d="M0,192 C320,272 560,112 900,192 C1180,256 1320,160 1440,192 L1440,320 L0,320 Z"></path>
+      <path fill="#FDF3C7" fill-opacity="0.7" d="M0,240 C380,160 720,288 1120,216 C1280,188 1380,224 1440,240 L1440,320 L0,320 Z"></path>
+    </svg>
+  </div>
+
+  <!-- ==================== 頁首（無任何音效控制列，慕夏圓拱徽章與高易讀性標題） ==================== -->
+  <header class="relative z-20 backdrop-blur-md bg-[#FAF8EE]/85 border-b border-[#CBE2C3]/60">
+    <div class="max-w-5xl mx-auto px-5 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <button id="headerHomeBtn" type="button" class="group flex items-center gap-3.5 text-left focus:outline-none">
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-[#FDF3C7] to-[#CBE2C3] border-2 border-[#8FA889] flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+          <svg class="w-6 h-6 text-[#1F3225]" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="13" stroke="#8FA889" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <path d="M16 25C11 20.5 9 16.5 9 12.5C9 8.8 12.1 6 16 6C19.9 6 23 8.8 23 12.5C23 16.5 21 20.5 16 25Z" fill="#E4F1DF" stroke="#1F3225" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 24V11" stroke="#1F3225" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M16 16C18 14.5 19.5 14 20.5 14" stroke="#1F3225" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold text-[#1F3225] tracking-wide">拾葉書房｜寫作者的陪伴空間</h1>
+          <p class="text-xs sm:text-sm text-[#3E5544] font-medium">卡關別擔心，故事終究會發芽</p>
+        </div>
+      </button>
+
+      <!-- 溫和的圓點進度指示（僅在關卡 1~5 顯示，關卡 0 維持純淨） -->
+      <nav id="topStageDots" class="hidden items-center gap-2 bg-white/80 px-4 py-1.5 rounded-full border border-[#CBE2C3]">
+        <span data-dot="1" class="stage-dot w-3 h-3 rounded-full bg-[#3E5D47] transition-all"></span>
+        <span class="w-2.5 h-0.5 rounded-full bg-[#CBE2C3]"></span>
+        <span data-dot="2" class="stage-dot w-3 h-3 rounded-full bg-[#CBE2C3] transition-all"></span>
+        <span class="w-2.5 h-0.5 rounded-full bg-[#CBE2C3]"></span>
+        <span data-dot="3" class="stage-dot w-3 h-3 rounded-full bg-[#CBE2C3] transition-all"></span>
+        <span class="w-2.5 h-0.5 rounded-full bg-[#CBE2C3]"></span>
+        <span data-dot="4" class="stage-dot w-3 h-3 rounded-full bg-[#CBE2C3] transition-all"></span>
+        <span class="w-2.5 h-0.5 rounded-full bg-[#CBE2C3]"></span>
+        <span data-dot="5" class="stage-dot w-3 h-3 rounded-full bg-[#CBE2C3] transition-all"></span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ==================== 主要內容區 ==================== -->
+  <main class="relative z-10 flex-1 flex flex-col justify-center max-w-5xl w-full mx-auto px-4 sm:px-6 py-8">
+
+    <!-- ==================== 關卡 0：【深呼吸入口】 ==================== -->
+    <!-- 畫面上除了頁首與頁尾以外，只有光球與下方出現的循環文案，不用其他文字 -->
+    <section id="stage-0" class="stage-container active">
+      <div id="stage0InnerWrap" class="max-w-2xl mx-auto flex flex-col items-center justify-center text-center min-h-[64vh] transition-opacity duration-700">
+        
+        <!-- 點選互動光球 -->
+        <button
+          id="breathingOrbBtn"
+          type="button"
+          aria-label="深呼吸光球"
+          class="relative my-10 w-48 h-48 sm:w-56 sm:h-56 flex items-center justify-center rounded-full focus:outline-none cursor-pointer group"
+        >
+          <!-- 慕夏外環細緻藤蔓圓框 -->
+          <svg class="absolute -inset-4 w-[calc(100%+2rem)] h-[calc(100%+2rem)] text-[#8FA889]/65 pointer-events-none transition-transform duration-1000 group-hover:rotate-12" viewBox="0 0 240 240" fill="none">
+            <circle cx="120" cy="120" r="112" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 6"/>
+            <circle cx="120" cy="120" r="104" stroke="#B6985A" stroke-opacity="0.5" stroke-width="1.2"/>
+            <circle cx="120" cy="8" r="5" fill="#CBE2C3"/>
+            <circle cx="120" cy="232" r="5" fill="#CBE2C3"/>
+            <circle cx="8" cy="120" r="5" fill="#FDF3C7"/>
+            <circle cx="232" cy="120" r="5" fill="#FDF3C7"/>
+          </svg>
+
+          <!-- 4秒吸氣放大、4秒吐氣縮小的淡草綠圓潤光球 -->
+          <div class="breathing-orb w-44 h-44 sm:w-52 sm:h-52 bg-gradient-to-br from-[#CBE2C3] via-[#E4F1DF] to-[#FDF3C7] border-2 border-white/90"></div>
+        </button>
+
+        <!-- 下方循環淡入淡出的四幕文案區 -->
+        <div class="min-h-[7.5rem] flex items-center justify-center px-4 max-w-xl">
+          <p
+            id="stage0CycleText"
+            class="text-lg sm:text-xl font-bold text-[#1F3225] leading-relaxed transition-opacity duration-1000 opacity-100"
+          >
+            坐在螢幕前很久了，卻連一行字都打不出來嗎？<br />先別急著責怪自己，把雙手從鍵盤上移開吧。
+          </p>
+        </div>
+
+      </div>
+
+      <!-- 點選光球後浮現並如香味浮升到畫面之外的過渡文案 -->
+      <div id="aromaTransitionOverlay" class="hidden fixed inset-0 z-40 pointer-events-none flex items-center justify-center px-6">
+        <div id="aromaFloatingText" class="px-8 py-5 rounded-full bg-white/95 border-2 border-[#CBE2C3] shadow-lg text-lg sm:text-2xl font-bold text-[#1F3225] text-center">
+          泡杯茶，來看看是什麼絆住了你的謬司 🍵
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 關卡 1：【迷霧探索】抽牌與翻牌體驗 ==================== -->
+    <section id="stage-1" class="stage-container">
+      <div class="max-w-5xl mx-auto flex flex-col items-center">
+
+        <!-- 關卡引導語 -->
+        <div class="text-center mb-6 max-w-2xl bg-white/90 px-7 py-4 rounded-full border-2 border-[#CBE2C3] shadow-sm">
+          <p id="stage1GuideText" class="text-base sm:text-lg font-bold text-[#1F3225]">
+            請抽三張卡，看看是不是你的心情寫照。
+          </p>
+        </div>
+
+        <!-- 階段 1-A：正面朝下的一疊牌（點擊抽牌） -->
+        <div id="deckPileZone" class="my-6 flex flex-col items-center">
+          <button
+            id="drawDeckPileBtn"
+            type="button"
+            class="group relative w-56 h-80 sm:w-64 sm:h-88 rounded-[28px] focus:outline-none cursor-pointer transition-transform duration-500 hover:-translate-y-2"
+          >
+            <div class="absolute inset-0 translate-x-3 translate-y-3 rounded-[28px] bg-[#E4F1DF] border-2 border-[#8FA889]"></div>
+            <div class="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-[28px] bg-[#FDF3C7] border-2 border-[#8FA889]"></div>
+            <div class="relative inset-0 w-full h-full rounded-[28px] bg-gradient-to-b from-[#E4F1DF] via-[#FAF8EE] to-[#FDF3C7] border-2 border-[#8FA889] shadow-md flex flex-col items-center justify-between p-5">
+              <div class="w-full h-full rounded-[22px] border-2 border-[#B6985A]/70 flex flex-col items-center justify-center p-4 relative">
+                <svg class="w-32 h-32 text-[#3E5D47]" viewBox="0 0 120 120" fill="none">
+                  <circle cx="60" cy="60" r="50" stroke="#B6985A" stroke-width="1.6"/>
+                  <circle cx="60" cy="60" r="42" stroke="#8FA889" stroke-width="1.3" stroke-dasharray="4 3"/>
+                  <path d="M60 22C48 38 44 52 60 68C76 52 72 38 60 22Z" fill="#CBE2C3" stroke="#3E5D47" stroke-width="1.8"/>
+                  <path d="M60 98C48 82 44 68 60 52C76 68 72 82 60 98Z" fill="#FDF3C7" stroke="#3E5D47" stroke-width="1.8"/>
+                  <circle cx="60" cy="60" r="8" fill="#FAF8EE" stroke="#3E5D47" stroke-width="1.8"/>
+                </svg>
+                <span class="mt-4 px-5 py-2 rounded-full bg-white/95 border border-[#CBE2C3] text-sm sm:text-base font-bold text-[#1F3225] shadow-sm group-hover:bg-[#FDF3C7] transition-colors">
+                  點擊抽出三張卡
+                </span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- 階段 1-B：抽出的三張 WotC 慕夏風格卡牌 -->
+        <div id="drawnCardsGrid" class="hidden w-full grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7 my-2">
+          <!-- 由 JS 渲染 3 張卡牌 -->
+        </div>
+
+        <!-- 階段 1-C：三張都翻開後的重抽詢問區 -->
+        <div id="redrawControlBar" class="hidden mt-8 flex flex-col items-center gap-4 text-center">
+          <div id="redrawButtonsWrap" class="flex flex-wrap items-center justify-center gap-4">
+            <button
+              id="finishDrawBtn"
+              type="button"
+              class="pill-btn px-8 py-3.5 bg-[#3E5D47] hover:bg-[#2F4A37] text-white font-bold text-base shadow-sm"
+            >
+              我抽完了 ✨
+            </button>
+            <button
+              id="enterRedrawModeBtn"
+              type="button"
+              class="pill-btn px-7 py-3.5 bg-[#FDF3C7] hover:bg-[#F7E69B] text-[#1F3225] border-2 border-[#8FA889] font-bold text-base shadow-sm"
+            >
+              我要重抽 🔄
+            </button>
+          </div>
+
+          <!-- 選擇要重抽哪幾張卡的子面板 -->
+          <div id="redrawSelectionSubBar" class="hidden flex-wrap items-center justify-center gap-3 bg-white/95 px-6 py-4 rounded-full border-2 border-[#CBE2C3] shadow-sm">
+            <span class="text-sm sm:text-base font-bold text-[#1F3225]">請點選上方想換掉的卡片，或：</span>
+            <button
+              id="confirmRedrawSelectedBtn"
+              type="button"
+              disabled
+              class="pill-btn px-5 py-2 bg-[#CBE2C3] hover:bg-[#B5D4AB] text-[#1F3225] font-bold text-sm disabled:opacity-40"
+            >
+              換掉選中的卡
+            </button>
+            <button
+              id="redrawAllThreeBtn"
+              type="button"
+              class="pill-btn px-5 py-2 bg-[#FDF3C7] hover:bg-[#F7E69B] text-[#1F3225] border border-[#8FA889] font-bold text-sm"
+            >
+              回到牌疊全部重抽
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 關卡 2：【瓶頸圖鑑】慕夏風精靈與現役作家悄悄話 ==================== -->
+    <section id="stage-2" class="stage-container">
+      <div class="max-w-3xl mx-auto space-y-7">
+
+        <!-- 圖鑑卡片清單（單一類型與複合交互作用皆使用完全相同的圓拱卡片呈現，不顯示雙重觸發標題與作家代號） -->
+        <div id="pokedexCardsList" class="space-y-8">
+          <!-- 由 JS 渲染對應的精靈圖鑑與「現役作家的共鳴悄悄話」選擇框 -->
+        </div>
+
+        <div class="pt-4 text-center">
+          <button
+            id="toStage3Btn"
+            type="button"
+            class="pill-btn px-9 py-4 bg-[#3E5D47] hover:bg-[#2F4A37] text-white font-bold text-base sm:text-lg shadow-md"
+          >
+            前往解方扭蛋機，抽取今日處方籤 🔮
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 關卡 3：【解方扭蛋機／幸運籤餅處方籤】 ==================== -->
+    <section id="stage-3" class="stage-container">
+      <div class="max-w-3xl mx-auto flex flex-col items-center">
+
+        <!-- 頂部詢問能量狀態 -->
+        <div class="text-center max-w-2xl mb-6 bg-white/95 px-7 py-5 rounded-[32px] border-2 border-[#CBE2C3] shadow-sm">
+          <p class="text-base sm:text-lg font-bold text-[#1F3225] leading-relaxed">
+            「現在的你，比較想先離開書桌喘口氣，還是想試著動手推進一點點？」
+          </p>
+          <div class="flex flex-wrap items-center justify-center gap-3 mt-4">
+            <button
+              type="button"
+              data-energy="rest"
+              class="energy-choice-btn pill-btn px-6 py-2.5 border-2 border-[#3E5D47] bg-[#E4F1DF] text-[#1F3225] font-bold text-sm sm:text-base"
+            >
+              🌿 先離開書桌喘口氣
+            </button>
+            <button
+              type="button"
+              data-energy="action"
+              class="energy-choice-btn pill-btn px-6 py-2.5 border-2 border-[#8FA889] bg-white hover:bg-[#FDF3C7]/60 text-[#3E5544] font-bold text-sm sm:text-base"
+            >
+              ⚔️ 試著動手推進一點點
+            </button>
+          </div>
+        </div>
+
+        <!-- 階段 3-A：畫面正中央的慕夏圓拱溫室扭蛋機 + 掉落的扭蛋 -->
+        <div id="gachaCenterStage" class="my-4 flex flex-col items-center justify-center w-full transition-opacity duration-700">
+          <div class="relative w-64 h-72 sm:w-72 sm:h-80 rounded-[999px_999px_56px_56px] bg-gradient-to-b from-[#FDF3C7] via-[#FAF8EE] to-[#CBE2C3] border-4 border-[#8FA889] shadow-lg flex flex-col items-center justify-between p-6">
+            <div class="w-48 h-44 sm:w-52 sm:h-48 rounded-full bg-white/85 border-2 border-[#B6985A]/60 relative overflow-hidden flex items-center justify-center shadow-inner">
+              <div class="w-12 h-12 rounded-full bg-[#CBE2C3] border-2 border-white absolute bottom-3 left-6 shadow-sm"></div>
+              <div class="w-14 h-14 rounded-full bg-[#FDF3C7] border-2 border-white absolute bottom-4 right-7 shadow-sm"></div>
+              <div class="w-12 h-12 rounded-full bg-[#F8E8DF] border-2 border-white absolute bottom-12 left-16 shadow-sm"></div>
+              <div class="w-11 h-11 rounded-full bg-[#E4F1DF] border-2 border-white absolute bottom-11 right-16 shadow-sm"></div>
+              <span class="relative z-10 px-4 py-1.5 rounded-full bg-white/95 border border-[#CBE2C3] text-xs sm:text-sm font-bold text-[#1F3225]">
+                點擊下方旋鈕扭出解方
+              </span>
+            </div>
+
+            <button
+              id="spinGachaKnobBtn"
+              type="button"
+              class="w-16 h-16 rounded-full bg-[#3E5D47] hover:bg-[#2F4A37] text-[#FDF3C7] border-4 border-[#FDF3C7] shadow-md flex items-center justify-center cursor-pointer transition-transform duration-700 focus:outline-none"
+              title="點擊轉動扭蛋機"
+            >
+              <div id="gachaKnobBar" class="w-10 h-3 rounded-full bg-[#FDF3C7] transition-transform duration-700"></div>
+            </button>
+
+            <div class="w-16 h-4 rounded-full bg-[#3E5D47]/20"></div>
+          </div>
+
+          <!-- 掉下來的扭蛋（點擊打開扭蛋） -->
+          <div id="droppedCapsuleWrap" class="hidden mt-6 flex flex-col items-center">
+            <button
+              id="openDroppedCapsuleBtn"
+              type="button"
+              class="capsule-dropping group flex flex-col items-center focus:outline-none cursor-pointer"
+            >
+              <div class="relative w-28 h-28 rounded-full border-4 border-white shadow-lg overflow-hidden transition-transform duration-500 group-hover:scale-110">
+                <div class="w-full h-1/2 bg-gradient-to-b from-[#B5D4AB] to-[#CBE2C3]"></div>
+                <div class="w-full h-1/2 bg-gradient-to-t from-[#F5E18B] to-[#FDF3C7]"></div>
+                <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 bg-white"></div>
+                <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white border-2 border-[#8FA889]"></div>
+              </div>
+              <span class="mt-3 px-5 py-2 rounded-full bg-[#FDF3C7] border-2 border-[#8FA889] text-sm sm:text-base font-bold text-[#1F3225] shadow-sm group-hover:bg-[#F7E69B]">
+                ✨ 點擊打開扭蛋
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 階段 3-B：打開扭蛋後淡入的「幸運籤餅籤紙（Fortune Cookie Slip）」處方籤 -->
+        <div id="fortuneSlipStage" class="hidden w-full space-y-6 transition-opacity duration-700">
+          
+          <!-- 幸運籤餅籤紙本體（當使用者點選「為什麼這招有效？」時，此處淡出並轉變為作家實證畫面） -->
+          <div id="fortuneSlipMainCard" class="fortune-slip-unfold relative bg-[#FFFEFA] rounded-[36px] p-7 sm:p-10 border-2 border-[#B6985A] shadow-[0_16px_40px_rgba(62,93,71,0.08)] transition-opacity duration-700">
+            
+            <!-- 畫面一：幸運籤餅處方籤正面 -->
+            <div id="slipActionView" class="space-y-5 transition-opacity duration-700">
+              <div class="flex items-center justify-between gap-2 pb-4 border-b-2 border-dashed border-[#CBE2C3]">
+                <span id="slipCategoryBadge" class="px-4 py-1 rounded-full bg-[#E4F1DF] text-[#1F3225] text-xs sm:text-sm font-bold">
+                  🌿 微風散步籤
+                </span>
+                <span class="text-xs sm:text-sm font-bold text-[#8FA889]">🥠 拾葉幸運籤餅</span>
+              </div>
+
+              <h3 id="slipTitleText" class="text-xl sm:text-2xl font-bold text-[#1F3225]">
+                【帶著故事去散步（背景運算）】
+              </h3>
+
+              <p id="slipActionText" class="text-base sm:text-lg text-[#1F3225] font-medium leading-relaxed bg-[#FAF8EE] p-5 sm:p-6 rounded-[24px] border border-[#CBE2C3]">
+                <!-- 具體微行動建議 -->
+              </p>
+
+              <!-- 單獨點擊按鈕：「為什麼這招有效？」 -->
+              <div class="pt-3 text-center">
+                <button
+                  id="whyEffectiveBtn"
+                  type="button"
+                  class="pill-btn px-7 py-3 bg-[#FDF3C7] hover:bg-[#F7E69B] text-[#1F3225] border-2 border-[#B6985A]/80 font-bold text-sm sm:text-base shadow-sm"
+                >
+                  💡 為什麼這招有效？
+                </button>
+              </div>
+            </div>
+
+            <!-- 畫面二：點選「為什麼這招有效？」後原畫面淡出，浮現出來的作家實證文字（無作家A/B標籤，隨機顯示1則） -->
+            <div id="slipEvidenceView" class="hidden opacity-0 space-y-5 transition-opacity duration-700">
+              <div class="flex items-center justify-between gap-2 pb-4 border-b-2 border-dashed border-[#CBE2C3]">
+                <span class="px-4 py-1 rounded-full bg-[#FDF3C7] text-[#1F3225] text-xs sm:text-sm font-bold">
+                  💡 為什麼這招有效？
+                </span>
+                <span id="evidenceTitleTag" class="text-xs sm:text-sm font-bold text-[#3E5D47]"></span>
+              </div>
+
+              <div class="bg-[#E4F1DF]/75 p-5 sm:p-6 rounded-[24px] border border-[#8FA889]">
+                <p id="slipScienceText" class="text-base sm:text-lg text-[#1F3225] font-medium leading-relaxed"></p>
+              </div>
+
+              <div class="bg-[#FAF8EE] p-5 sm:p-6 rounded-[24px] border border-[#B6985A]/70">
+                <p id="slipRandomQuoteText" class="text-base sm:text-lg text-[#1F3225] font-medium leading-relaxed"></p>
+              </div>
+
+              <div class="pt-2 text-center">
+                <button
+                  id="backToSlipActionBtn"
+                  type="button"
+                  class="pill-btn px-6 py-2.5 bg-white hover:bg-[#E4F1DF] text-[#3E5D47] border border-[#8FA889] font-bold text-sm"
+                >
+                  ← 回到處方籤行動建議
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 換一顆扭蛋 或 收下處方籤前往下一關 -->
+          <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+            <button
+              id="redrawGachaBtn"
+              type="button"
+              class="pill-btn px-6 py-3.5 bg-white hover:bg-[#FDF3C7] text-[#1F3225] border-2 border-[#8FA889] font-bold text-sm sm:text-base shadow-sm"
+            >
+              🔄 換一顆扭蛋（沒關係，找最舒服的方式）
+            </button>
+            <button
+              id="toStage4Btn"
+              type="button"
+              class="pill-btn px-8 py-3.5 bg-[#3E5D47] hover:bg-[#2F4A37] text-white font-bold text-base shadow-md"
+            >
+              收下這張處方籤，記下今日微光 🌱 →
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 關卡 4：【種子成長日記】轉化留存與正式處方箋畫面 ==================== -->
+    <section id="stage-4" class="stage-container">
+      <div class="max-w-3xl mx-auto">
+
+        <!-- 階段 4-A：淺鵝黃色圓角小便籤輸入畫面 -->
+        <div id="journalComposeStep" class="bg-[#FDF3C7]/90 rounded-[36px] p-6 sm:p-10 border-2 border-[#B6985A]/70 shadow-md space-y-6 transition-opacity duration-700">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <h2 class="text-xl sm:text-2xl font-bold text-[#1F3225]">🌱 記下今天的轉化微光</h2>
+            <div class="relative flex items-center gap-2 bg-white/90 px-4 py-1.5 rounded-full border border-[#8FA889]">
+              <span id="waterDropIcon" class="hidden text-lg">💧</span>
+              <span id="sproutTreeEmoji" class="text-2xl transition-transform duration-700">🌱</span>
+              <span class="text-xs sm:text-sm font-bold text-[#3E5D47]">等待養分澆灌</span>
+            </div>
+          </div>
+
+          <!-- 七種搭配色調與慕夏圖案選擇 -->
+          <div>
+            <label class="block text-sm sm:text-base font-bold text-[#1F3225] mb-3">
+              🎨 選擇處方箋搭配色調與植物圖騰（共 7 款）：
+            </label>
+            <div id="themePillsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <!-- 由 JS 渲染 7 款主題按鈕 -->
+            </div>
+          </div>
+
+          <!-- 仿照社群媒體 X 字數上限（140字）的清楚輸入框 -->
+          <div class="bg-white/95 rounded-[28px] p-5 border-2 border-[#CBE2C3] focus-within:border-[#3E5D47] transition-colors">
+            <label for="journalNoteInput" class="block text-sm font-bold text-[#3E5D47] mb-2">
+              ✍️ 寫下你今天的小決定（可選填，或直接點擊下方按鈕完成）：
+            </label>
+            <textarea
+              id="journalNoteInput"
+              rows="3"
+              maxlength="140"
+              placeholder="寫下你今天打算怎麼善待自己與作品吧！（例如：「今天先去散步 20 分鐘，不逼自己改第一集了」、「決定找朋友聊聊第三章的盲點」）"
+              class="w-full bg-transparent focus:outline-none text-base sm:text-lg text-[#1F3225] leading-relaxed resize-none"
+            ></textarea>
+
+            <div class="flex items-center justify-between pt-3 mt-2 border-t border-[#E4F1DF]">
+              <div class="flex flex-wrap gap-2">
+                <button type="button" class="quick-fill-btn text-xs font-bold px-3 py-1 rounded-full bg-[#E4F1DF] hover:bg-[#CBE2C3] text-[#1F3225] transition-colors">
+                  ＋ 今天先去散步 20 分鐘，不逼自己改第一集了
+                </button>
+                <button type="button" class="quick-fill-btn text-xs font-bold px-3 py-1 rounded-full bg-[#F8E8DF] hover:bg-[#F2D5C4] text-[#1F3225] transition-colors">
+                  ＋ 決定找朋友聊聊第三章的盲點
+                </button>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <svg class="w-6 h-6 -rotate-90" viewBox="0 0 28 28">
+                  <circle cx="14" cy="14" r="10" fill="none" stroke="#E4F1DF" stroke-width="3"></circle>
+                  <circle id="xCharProgressCircle" cx="14" cy="14" r="10" fill="none" stroke="#3E5D47" stroke-width="3" stroke-dasharray="62.83" stroke-dashoffset="62.83" stroke-linecap="round"></circle>
+                </svg>
+                <span id="xCharCountLabel" class="text-xs sm:text-sm font-bold text-[#3E5544]">0 / 140</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 完成按鈕 -->
+          <div class="pt-2">
+            <button
+              id="submitNourishBtn"
+              type="button"
+              class="pill-btn w-full py-4 bg-[#3E5D47] hover:bg-[#2F4A37] text-white font-bold text-base sm:text-lg shadow-md"
+            >
+              將決定化為養分，收下今日處方箋 ✨
+            </button>
+          </div>
+        </div>
+
+        <!-- 階段 4-B：點選後顯示的「正式處方箋畫面」（含下載、分享、「結束」與「不下載結束」按鈕，點選後淡出換到關卡 5） -->
+        <div id="formalPrescriptionStep" class="hidden space-y-7 transition-opacity duration-700">
+          <div class="bg-white/95 rounded-[36px] p-6 sm:p-9 border-2 border-[#CBE2C3] shadow-md text-center space-y-6">
+            <div class="inline-flex items-center gap-2 px-5 py-1.5 rounded-full bg-[#E4F1DF] text-[#1F3225] text-sm font-bold">
+              <span>🌿 你的決定已化為水滴，讓故事小樹苗長出了一片新葉！</span>
+            </div>
+
+            <!-- 處方箋 Canvas 預覽 -->
+            <div class="max-w-md mx-auto rounded-[28px] overflow-hidden border-2 border-[#8FA889] shadow-sm bg-[#FAF8EE]">
+              <canvas id="prescriptionCardCanvas" width="800" height="1020" class="w-full h-auto block"></canvas>
+            </div>
+
+            <!-- 在正式畫面仍可快速切換 7 款色調 -->
+            <div id="formalThemeQuickSwitch" class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+              <!-- 由 JS 同步渲染 7 色圓鈕 -->
+            </div>
+
+            <!-- 下載與分享按鈕 -->
+            <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+              <button
+                id="downloadCardImgBtn"
+                type="button"
+                class="pill-btn px-7 py-3.5 bg-[#3E5D47] hover:bg-[#2F4A37] text-white font-bold text-sm sm:text-base shadow-sm"
+              >
+                📥 下載處方箋圖檔 (PNG)
+              </button>
+              <button
+                id="shareCardBtn"
+                type="button"
+                class="pill-btn px-7 py-3.5 bg-[#FDF3C7] hover:bg-[#F7E69B] text-[#1F3225] border-2 border-[#8FA889] font-bold text-sm sm:text-base shadow-sm"
+              >
+                📤 分享至社群平台
+              </button>
+            </div>
+            <p id="shareFeedbackMsg" class="text-sm font-bold text-[#3E5D47] hidden"></p>
+
+            <!-- 「結束」與「不下載結束」按鈕（點選後畫面淡出，換到關卡 5 臨別贈言） -->
+            <div class="pt-5 border-t border-[#E4F1DF] flex flex-wrap items-center justify-center gap-4">
+              <button
+                id="finishStage4Btn"
+                type="button"
+                class="pill-btn px-8 py-3.5 bg-[#CBE2C3] hover:bg-[#B5D4AB] text-[#1F3225] font-bold text-base shadow-sm"
+              >
+                結束 ✨
+              </button>
+              <button
+                id="finishWithoutDownloadBtn"
+                type="button"
+                class="pill-btn px-7 py-3.5 bg-white hover:bg-[#FAF8EE] text-[#3E5544] border-2 border-[#CBE2C3] font-bold text-sm sm:text-base"
+              >
+                不下載結束 →
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== 關卡 5：【臨別贈言】全畫面顯示金句循環 ==================== -->
+    <section id="stage-5" class="stage-container">
+      <div class="max-w-3xl mx-auto min-h-[66vh] flex flex-col items-center justify-between py-6 text-center">
+
+        <div class="w-full flex-1 flex flex-col items-center justify-center">
+          <!-- 慕夏風格圓拱花環全畫面金句舞台 -->
+          <div class="w-full bg-gradient-to-br from-[#FDF3C7]/90 via-[#FAF8EE]/95 to-[#E4F1DF]/90 rounded-[48px] p-8 sm:p-14 border-2 border-[#B6985A] shadow-[0_20px_50px_rgba(62,93,71,0.08)] space-y-6">
+            
+            <!-- 金句標題（隨機分批4秒淡入/淡出） -->
+            <div
+              id="stage5BlessingTitleWrap"
+              class="text-lg sm:text-2xl font-bold text-[#3E5D47] tracking-wider min-h-[2.5rem] flex items-center justify-center flex-wrap"
+            ></div>
+
+            <!-- 金句內文（10秒內隨機分批、每批4秒淡入；完整顯示10秒；再用10秒隨機分批、每批4秒淡出） -->
+            <div
+              id="stage5BlessingTextWrap"
+              class="text-xl sm:text-3xl font-bold text-[#1F3225] leading-relaxed min-h-[9rem] flex items-center justify-center"
+            >
+              <p id="stage5BlessingCharsP" class="max-w-2xl"></p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 底部「再試一次」按鈕，讓畫面回到開頭重新開始遊戲 -->
+        <div class="mt-10">
+          <button
+            id="tryAgainStage5Btn"
+            type="button"
+            class="pill-btn px-9 py-4 bg-white/95 hover:bg-[#FDF3C7] text-[#1F3225] border-2 border-[#3E5D47] font-bold text-base sm:text-lg shadow-sm"
+          >
+            🌱 再試一次
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 頁尾版權與致謝宣告（點擊後才顯示說明文字與方格子文章連結） ==================== -->
+  <footer class="relative z-20 py-6 px-4 text-center">
+    <button
+      id="footerToggleBtn"
+      type="button"
+      class="pill-btn px-5 py-2 bg-white/85 hover:bg-[#FDF3C7] text-[#3E5D47] border border-[#CBE2C3] text-xs sm:text-sm font-bold shadow-sm"
+    >
+      🍃 關於拾葉書房與研究出處
+    </button>
+
+    <div
+      id="footerCreditsModal"
+      class="hidden max-w-2xl mx-auto mt-4 p-6 rounded-[28px] bg-white/95 border-2 border-[#CBE2C3] shadow-md text-sm sm:text-base text-[#1F3225] leading-relaxed space-y-3"
+    >
+      <p>
+        本網站理論架構與語錄改編自國立中正大學成人及繼續教育學系碩士論文《面對寫作瓶頸：小說作家轉化學習歷程之研究》（研究生：詹子藝／指導教授：林麗惠博士，2024）。願這座小溫室能給予陷入寫作瓶頸的創作夥伴即時的陪伴，助你再次挺立，邁步向前。
+      </p>
+      <p class="pt-1">
+        📖 論文介紹文章：<a
+          href="https://vocus.cc/article/65c2d06ffd8978000106b3e3"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-bold text-[#3E5D47] underline hover:text-[#1F3225]"
+        >https://vocus.cc/article/65c2d06ffd8978000106b3e3 ↗</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 1. 關卡 0：深呼吸四段循環文案
+    // =========================================================================
+    const STAGE0_CYCLE_TEXTS = [
+      '坐在螢幕前很久了，卻連一行字都打不出來嗎？<br />先別急著責怪自己，把雙手從鍵盤上移開吧。',
+      '《哈利波特》作者 J.K. 羅琳曾在第四集第九章卡關到覺得自己「幾乎完蛋了」。',
+      '推理大師勞倫斯・卜洛克（Lawrence Block）說，寫每本書總會在某個時刻「彷彿一個輪子掉下來，然後撞牆」。',
+      '經歷寫作瓶頸不代表你是一個糟糕的作家，只代表你是一位正在挑戰新高度的尋常寫作者。'
+    ];
+
+    // =========================================================================
+    // 2. 關卡 1：擴充版 WotC 慕夏新藝術卡牌庫（共 18 張，統一配色，無任何編號與作家代號）
+    // =========================================================================
+    const WOTC_DECK_DATA = [
+      {
+        id: 'CARD-T1-A',
+        category: 'tech',
+        title: '岔路口的選擇障礙',
+        artType: 'crossroads',
+        os: '「腦子裡有好幾個念頭，甚至寫了三、四個版本，但每一條路看起來都行得通、又好像都不夠好，完全不知道該怎麼取捨與編排⋯⋯」'
+      },
+      {
+        id: 'CARD-T1-B',
+        category: 'tech',
+        title: '岔路口的選擇障礙',
+        artType: 'crossroads',
+        os: '「一開始心裡面有好多零散的念頭與篇章，可是完全不曉得該用什麼方法把它們串聯起來，總覺得故事有點零散⋯⋯」'
+      },
+      {
+        id: 'CARD-T2-A',
+        category: 'tech',
+        title: '不熟悉的肌肉痠痛',
+        artType: 'muscle',
+        os: '「這次想寫的題材、搞笑橋段或文風，跟以前擅長的完全不一樣！明明很喜歡這個類型，自己動筆卻覺得怎麼寫都很彆扭、抓不到語感。」'
+      },
+      {
+        id: 'CARD-T2-B',
+        category: 'tech',
+        title: '不熟悉的肌肉痠痛',
+        artType: 'muscle',
+        os: '「喜歡讀的小說類型跟自己真正擅長寫的居然不一樣！跨入陌生的文體就像在鍛鍊從沒用過的肌肉，每一筆都覺得格外費力。」'
+      },
+      {
+        id: 'CARD-T3-A',
+        category: 'tech',
+        title: '牽一髮動全身的泥淖',
+        artType: 'domino',
+        os: '「前面才改了一個小設定，後面整串劇情就跟著骨牌一樣全歪了！覺得某個情節效果不夠強，一直反覆重寫修改，整個大腦像卡死在原地。」'
+      },
+      {
+        id: 'CARD-T3-B',
+        category: 'tech',
+        title: '牽一髮動全身的泥淖',
+        artType: 'domino',
+        os: '「已經很明確知道故事卡住的點在哪裡，也想在結構上做更好的發揮，但坐在電腦前大腦卻過度專注而固化，還沒想到該怎麼跨過去。」'
+      },
+      {
+        id: 'CARD-T4-A',
+        category: 'tech',
+        title: '自己長腳的故事角色',
+        artType: 'runner',
+        os: '「明明擬好了完整的大綱，但寫著寫著，角色卻完全不照大綱的方向跑！計畫永遠趕不上變化，坐在電腦前完全不知道下一句該怎麼接。」'
+      },
+      {
+        id: 'CARD-T4-B',
+        category: 'tech',
+        title: '自己長腳的故事角色',
+        artType: 'runner',
+        os: '「開始動筆時沒想到篇幅會拉得這麼長，或是寫到一半突然冒出新點子，原本規劃好的節奏全被打亂，不知道該怎麼把故事收回來。」'
+      },
+      {
+        id: 'CARD-P1-A',
+        category: 'psych',
+        title: '我是不是根本不該寫小說',
+        artType: 'mirror',
+        os: '「只要一緊張腦袋就打結，甚至開始懷疑自己根本不是寫小說這塊料、才華是不是早就用完了？到底什麼才算是『好看的小說』？」'
+      },
+      {
+        id: 'CARD-P1-B',
+        category: 'psych',
+        title: '我是不是根本不該寫小說',
+        artType: 'mirror',
+        os: '「自我否定成了心底最大的高牆。總覺得自己寫出來的東西沒有那麼好，連完成階段目標也很難真正感到快樂。」'
+      },
+      {
+        id: 'CARD-P2-A',
+        category: 'psych',
+        title: '知道但做不到真是太痛苦了',
+        artType: 'mountain',
+        os: '「讀越多厲害的作品、眼界越高，就越無法放過自己寫出來的東西。明知道他人的高度現在還達不到，卻還是因為寫不出心中的完美標準而停擺。」'
+      },
+      {
+        id: 'CARD-P2-B',
+        category: 'psych',
+        title: '知道但做不到真是太痛苦了',
+        artType: 'mountain',
+        os: '「每次動筆都想給自己新的挑戰、不甘心只是重複上一本的套路，卻也在試圖超越自我的過程中，把自己逼進了動彈不得的死角。」'
+      },
+      {
+        id: 'CARD-P3-A',
+        category: 'psych',
+        title: '進不去的異世界通道',
+        artType: 'portal',
+        os: '「手頭同時有別的案子，或是被日常瑣事打斷太久。現在重新打開這份稿子，卻覺得自己跟裡面的角色好陌生，情緒完全切換不過去。」'
+      },
+      {
+        id: 'CARD-NEW-1',
+        category: 'psych',
+        title: '成為創世神',
+        artType: 'cosmos',
+        os: '「如果我沒讓世界觀完整，那故事世界就有闕漏。如果我沒好好設定每位角色，那是不是會被說角色不立體？」'
+      },
+      {
+        id: 'CARD-E1-A',
+        category: 'env',
+        title: '求求你們別再嫌棄了',
+        artType: 'eyes',
+        os: '「把初稿拿給別人看卻得到不好的回饋，或是被退稿、被要求大改結構。一邊想滿足別人的期待，一邊又怕背叛了自己最初想寫的東西。」'
+      },
+      {
+        id: 'CARD-E2-A',
+        category: 'env',
+        title: '我需要時間寫作跟睡覺',
+        artType: 'hourglass',
+        os: '「白天的工作和生活已經榨乾了精力，或者截稿日就在眼前逼得人喘不過氣。在這麼緊迫、沒有餘裕的狀態下，為了產出而寫讓我覺得好累。」'
+      },
+      {
+        id: 'CARD-E3-A',
+        category: 'env',
+        title: '被框架綁住的翅膀',
+        artType: 'cage',
+        os: '「為了配合比賽規則、字數限制或特定商業市場喜歡的套路，必須把故事塞進不習慣的框架裡，覺得綁手綁腳、失去了自由創作的快樂。」'
+      },
+      {
+        id: 'CARD-NEW-2',
+        category: 'env',
+        title: '計畫趕不上變化',
+        artType: 'windvane',
+        os: '「AI進步太快、社會比小說離奇、拖太久想法也變了，這故事還能繼續下去嗎？」'
+      }
+    ];
+
+    function getMuchaCardArtSVG(artType) {
+      const commonFrame = `
+        <rect x="6" y="6" width="228" height="148" rx="22" fill="#FAF8EE" stroke="#B6985A" stroke-width="1.8"/>
+        <circle cx="120" cy="80" r="56" fill="#FDF3C7" fill-opacity="0.7" stroke="#8FA889" stroke-width="1.4" stroke-dasharray="4 3"/>
+        <path d="M24 140 C40 110, 55 110, 70 140" stroke="#CBE2C3" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M170 140 C185 110, 200 110, 216 140" stroke="#CBE2C3" stroke-width="2" fill="none" stroke-linecap="round"/>
+      `;
+
+      const icons = {
+        crossroads: `
+          <path d="M120 132 V82 M120 82 L88 52 M120 82 L152 52 M120 82 L120 42" stroke="#3E5D47" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="88" cy="48" r="8" fill="#CBE2C3" stroke="#3E5D47" stroke-width="2"/>
+          <circle cx="152" cy="48" r="8" fill="#F8E8DF" stroke="#3E5D47" stroke-width="2"/>
+          <circle cx="120" cy="38" r="8" fill="#FDF3C7" stroke="#3E5D47" stroke-width="2"/>
+        `,
+        muscle: `
+          <path d="M86 105 C86 72, 112 52, 138 62 C154 68, 156 92, 138 105 C120 116, 96 116, 86 105 Z" fill="#E4F1DF" stroke="#3E5D47" stroke-width="2.2"/>
+          <path d="M108 42 C118 54, 122 68, 114 82" stroke="#B6985A" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="122" cy="52" r="6" fill="#FDF3C7" stroke="#3E5D47" stroke-width="1.8"/>
+        `,
+        domino: `
+          <rect x="78" y="54" width="22" height="52" rx="8" fill="#E4F1DF" stroke="#3E5D47" stroke-width="2"/>
+          <rect x="110" y="54" width="22" height="52" rx="8" transform="rotate(16 121 80)" fill="#FDF3C7" stroke="#3E5D47" stroke-width="2"/>
+          <rect x="142" y="58" width="22" height="52" rx="8" transform="rotate(34 153 84)" fill="#F8E8DF" stroke="#3E5D47" stroke-width="2"/>
+        `,
+        runner: `
+          <circle cx="126" cy="48" r="10" fill="#F8E8DF" stroke="#3E5D47" stroke-width="2"/>
+          <path d="M98 72 Q122 58 144 70 L132 104 L106 98 Z" fill="#E4F1DF" stroke="#3E5D47" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M84 114 Q120 102 158 114" stroke="#B6985A" stroke-width="2" stroke-linecap="round"/>
+        `,
+        mirror: `
+          <ellipse cx="120" cy="78" rx="30" ry="42" fill="#E4F1DF" stroke="#3E5D47" stroke-width="2.2"/>
+          <circle cx="120" cy="68" r="11" fill="#FAF8EE" stroke="#3E5D47" stroke-width="1.8"/>
+          <path d="M102 102 C108 88, 132 88, 138 102" fill="#F8E8DF" stroke="#3E5D47" stroke-width="1.8" stroke-linecap="round"/>
+        `,
+        mountain: `
+          <path d="M76 118 C92 78, 108 52, 120 52 C132 52, 148 78, 164 118 Z" fill="#CBE2C3" stroke="#3E5D47" stroke-width="2.2" stroke-linejoin="round"/>
+          <circle cx="120" cy="38" r="7" fill="#FDF3C7" stroke="#B6985A" stroke-width="2"/>
+        `,
+        portal: `
+          <path d="M92 120 V68 A28 28 0 0 1 148 68 V120 Z" fill="#E4F1DF" stroke="#3E5D47" stroke-width="2.2"/>
+          <circle cx="136" cy="88" r="4" fill="#B6985A"/>
+          <path d="M108 120 V76 A12 12 0 0 1 132 76 V120" stroke="#8FA889" stroke-width="1.6"/>
+        `,
+        cosmos: `
+          <circle cx="120" cy="80" r="24" fill="#CBE2C3" stroke="#3E5D47" stroke-width="2.2"/>
+          <ellipse cx="120" cy="80" rx="46" ry="14" transform="rotate(-18 120 80)" fill="none" stroke="#B6985A" stroke-width="2"/>
+          <circle cx="84" cy="54" r="5" fill="#FDF3C7" stroke="#3E5D47" stroke-width="1.5"/>
+          <circle cx="156" cy="102" r="6" fill="#F8E8DF" stroke="#3E5D47" stroke-width="1.5"/>
+        `,
+        eyes: `
+          <path d="M78 80 Q120 50 162 80 Q120 110 78 80 Z" fill="#FAF8EE" stroke="#3E5D47" stroke-width="2.2" stroke-linejoin="round"/>
+          <circle cx="120" cy="80" r="14" fill="#CBE2C3" stroke="#3E5D47" stroke-width="2"/>
+          <circle cx="120" cy="80" r="6" fill="#3E5D47"/>
+        `,
+        hourglass: `
+          <path d="M96 46 H144 C144 68, 126 76, 120 80 C114 84, 96 92, 96 114 H144 C144 92, 126 84, 120 80 C114 76, 96 68, 96 46 Z" fill="#FDF3C7" stroke="#3E5D47" stroke-width="2.2" stroke-linejoin="round"/>
+          <line x1="88" y1="46" x2="152" y2="46" stroke="#B6985A" stroke-width="3" stroke-linecap="round"/>
+          <line x1="88" y1="114" x2="152" y2="114" stroke="#B6985A" stroke-width="3" stroke-linecap="round"/>
+        `,
+        cage: `
+          <path d="M90 114 V72 A30 30 0 0 1 150 72 V114 H90 Z" fill="#F8E8DF" stroke="#3E5D47" stroke-width="2.2" stroke-linejoin="round"/>
+          <path d="M104 86 C114 72, 128 72, 138 86" fill="#CBE2C3" stroke="#3E5D47" stroke-width="2" stroke-linecap="round"/>
+          <line x1="120" y1="42" x2="120" y2="114" stroke="#8FA889" stroke-width="1.8"/>
+        `,
+        windvane: `
+          <path d="M82 76 C104 56, 136 56, 158 76 C136 96, 104 96, 82 76 Z" fill="#E4F1DF" stroke="#3E5D47" stroke-width="2"/>
+          <circle cx="120" cy="76" r="10" fill="#FDF3C7" stroke="#B6985A" stroke-width="2"/>
+          <path d="M74 96 Q120 82 166 96" stroke="#8FA889" stroke-width="2" stroke-linecap="round"/>
+        `
+      };
+
+      return `<svg class="w-full h-36 sm:h-40" viewBox="0 0 240 160" fill="none">${commonFrame}${icons[artType] || icons.crossroads}</svg>`;
+    }
+
+    // =========================================================================
+    // 3. 關卡 2：瓶頸圖鑑與慕夏精靈 SVG（完全移除「作家A/B」與段落編碼、不設換看按鈕，每次遊玩隨機顯示1則）
+    // =========================================================================
+    function getMuchaSpiritSVG(spiritType) {
+      const palettes = {
+        tech: { halo: '#CBE2C3', dress: '#E4F1DF', accent: '#3E5D47', flower: '#FDF3C7' },
+        psych: { halo: '#FDF3C7', dress: '#F8E8DF', accent: '#5D4E3E', flower: '#CBE2C3' },
+        env: { halo: '#E4F1DF', dress: '#FDF3C7', accent: '#3E5D47', flower: '#F8E8DF' },
+        tech_psych: { halo: '#CBE2C3', dress: '#FDF3C7', accent: '#3E5D47', flower: '#F8E8DF' },
+        env_psych: { halo: '#F8E8DF', dress: '#FDF3C7', accent: '#3E5D47', flower: '#CBE2C3' },
+        env_tech: { halo: '#E4F1DF', dress: '#CBE2C3', accent: '#3E5D47', flower: '#FDF3C7' }
+      };
+      const p = palettes[spiritType] || palettes.tech;
+
+      return `
+        <svg class="w-36 h-44 sm:w-40 sm:h-48 mx-auto" viewBox="0 0 180 220" fill="none">
+          <rect x="14" y="12" width="152" height="196" rx="76" fill="#FAF8EE" stroke="#B6985A" stroke-width="2"/>
+          <circle cx="90" cy="88" r="56" fill="${p.halo}" stroke="#8FA889" stroke-width="1.6" stroke-dasharray="5 3"/>
+          <circle cx="90" cy="88" r="46" fill="#FAF8EE" fill-opacity="0.6" stroke="#B6985A" stroke-width="1"/>
+          <path d="M36 168 C46 132, 68 122, 90 122 C112 122, 134 132, 144 168 C126 192, 54 192, 36 168 Z" fill="${p.dress}" stroke="${p.accent}" stroke-width="2"/>
+          <circle cx="90" cy="84" r="22" fill="#FFFDF9" stroke="${p.accent}" stroke-width="2"/>
+          <path d="M81 84 Q85 88 89 84 M93 84 Q97 88 101 84" stroke="${p.accent}" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M86 94 Q90 97 94 94" stroke="${p.accent}" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="72" cy="68" r="6" fill="${p.flower}" stroke="${p.accent}" stroke-width="1.5"/>
+          <circle cx="90" cy="62" r="7" fill="${p.halo}" stroke="${p.accent}" stroke-width="1.5"/>
+          <circle cx="108" cy="68" r="6" fill="${p.flower}" stroke="${p.accent}" stroke-width="1.5"/>
+          <circle cx="90" cy="148" r="12" fill="${p.flower}" stroke="#B6985A" stroke-width="1.8"/>
+          <path d="M90 148 V134 C90 134, 98 130, 100 136" stroke="${p.accent}" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      `;
+    }
+
+    const POKEDEX_DATA = {
+      tech: {
+        spiritType: 'tech',
+        name: '🌱 【枝葉過盛的迷路精靈】',
+        analysis: '你現在遇到的並不是「不會寫」，而是腦中的想法與對作品的期待正在擴張，原有的枝幹一時之間還不知道怎麼支撐這麼多新長出來的葉子。研究發現，即便是寫作超過二十年的資深作家，隨著經驗累積、眼界提高，也依然會在劇情取捨與細節打磨上卡關。這代表你的創作品味正在升級！',
+        quotes: [
+          '「寫小說最有趣也是最麻煩的，就是故事都是互相牽連，只要你前面動一點點，後面就要動很多東西⋯⋯就跟人生一樣，計畫永遠趕不上變化，創作瓶頸其實就是『變化』。」',
+          '「因為寫小說的時候會擬大綱，可是我在寫的時候，通常他們不會往大綱的地方跑⋯⋯跟你想的大綱不一樣的時候，就會坐在電腦旁邊打不出字來。要改好幾次啊，因為光結局就三、四個版本。」',
+          '「一開始的時候就是有很多的念頭在心裡面，可是不曉得怎麼把它編排⋯⋯興趣跟擅長的不一定是同一類，像我喜歡看推理的，可是我完全不可能寫得出來。」',
+          '「現在創作比較不順是有時會覺得這個情節怪怪的，好像那個效果沒有做到夠強，然後就一直改一直改，有時候改一改就會發現好像又歪樓了，再拉回來這樣。」',
+          '「以前沒寫過輕小說，為了要參加比賽，第一個是卡在搞笑，不曉得該怎麼搞笑；第二個是不曉得該怎麼去調整自己的文字風格。現在則是思考小說的結構上可以再做更好的發揮。」',
+          '「寫作者不斷寫就會不斷進步，眼界就會不一樣，所以一定會對作品內部有更高的要求。有時候卡住，只是因為你對這部作品最核心想要的東西，還在醞釀成熟中。」',
+          '「我光是坐在那邊覺得沒辦法下筆，是因為整個大腦已經太過專注於這件事情，已經有點像是固化、卡死在那裡。另一種是這個想法可以擴充成故事，但現在還沒有足夠的材料去填補它。」',
+          '「在不同的類型當中寫作，很像在用不同的肌肉。駕馭文字的感覺真的很像是在駕馭肉身，會痠痛、會卡住，都是因為你正在鍛鍊新的肌群。」'
+        ]
+      },
+      psych: {
+        spiritType: 'psych',
+        name: '🌼 【追求完美的守門精靈】',
+        analysis: '你的內心住著一位對故事非常有愛、標準也很高的守門人。因為太在乎這部作品、太怕寫不好，焦慮感反而佔據了大腦的工作記憶，讓你坐在螢幕前動彈不得。請記得論文裡的一個重要發現：把「卡關」視為自己能力不足，是讓瓶頸惡化的最大迷思；其實，懂得自我懷疑的人，才寫得出有靈魂的故事。',
+        quotes: [
+          '「瓶頸是好東西啊！沒有遇過自我懷疑的人，要怎麼寫小說呢？假如有一個人告訴你他創作都沒有瓶頸，第一個反應是他的創作可能會蠻難看的！」',
+          '「因為我只要緊張，反而想不出東西，腦袋會打結⋯⋯瓶頸就是瓶頸，就跟你跑步會累一樣，有瓶頸是一個很正常的事情，不用想太多。」',
+          '「瓶頸有點像健康檢查，紅字的地方就是比較弱的，但跟它共存也可以啊，不一定要每個指數都變正常才能繼續走。」',
+          '「通常大家卡的點，不是因為不知道怎麼寫，大部分的煩惱都是『擔心寫不好』這件事情——但其實你心裡已經知道自己要寫什麼了。如果只是怕寫不好，去寫就對了，寫了才會好！」',
+          '「那時候有接一些額外的創作，有些故事的情境是容易進去再出來的，但有些不容易。以前寫不出來會徬徨，現在比較內化，有自信一定可以克服它，只是要花多少時間。」',
+          '「自我否定是非常大的瓶頸！得知別人哪個地方能夠做得比我更好，那我能不能做得一樣好呢？試了之後發現現在還做不到，那種心態本身就會成為瓶頸。」',
+          '「我的心態是我要跟自己比，跟我以前的作品相比有進步就還不錯；如果你拿來跟其他很厲害的人相比，就會變成另外一個瓶頸。現在會承認寫作就是一件很難、要花力氣去面對的事。」'
+        ]
+      },
+      env: {
+        spiritType: 'env',
+        name: '🍃 【風雨搖晃的溫室精靈】',
+        analysis: '現在困住你的，有很大一部分來自書桌外的世界。無論是生活的忙碌、截稿時間的壓迫，還是編輯與讀者的評價眼光，都在搖晃你的創作溫室。當外在壓力超過臨界點時，大腦自然會啟動保護機制讓你「寫不出來」。這不是你的錯，你只是需要一點喘息的餘裕，重新把溫室的窗戶關好。',
+        quotes: [
+          '「早期創作之所以不太有瓶頸，是因為那時候沒有包袱、很輕鬆；現在覺得卡關，有一大部分是因為時間緊迫，已經沒有那麼多讓素材自由掉入腦海的餘裕了。」',
+          '「讀者通常不會期待類型作家給你太多新的東西，但我一直原地踏步也不行，所以必須思考怎樣做出不同的東西，又不能太背叛讀者的期待。」',
+          '「以前可能對自己比較嚴厲，覺得硬去寫就會寫過去；現在會對自己比較寬容，誠實承認『寫作就是一件很難、要花力氣去面對的事情』，跟自己比就好了，不然會變成另外一個瓶頸。」',
+          '「把眼光拉長線來看，一本作品的成不成功不是唯一重點，重點是保護好自己的狀態，讓自己有辦法繼續往下寫。」',
+          '「有時候寫作會被生活影響很多，工作很忙、心情很亂，蠻難長時間很專心。遇到編輯因為市場考量要求改稿，一開始我也覺得很麻煩，後來學會一半配合市場、一半保留自己的風格。」',
+          '「因為我從來都不是單純的創作者，有白天的工作，用剩下的時間來做創作，這時時間分配就影響很大。現在回頭看，那些瓶頸其實都是創作者個人生涯或生命的印記。」',
+          '「當時我拿最初稿給一些寫作的朋友看，他們的回饋沒有很好，說結構是亂的⋯⋯要花很多時間去喬，跟自己、跟合作的人，這些事情在創作時都蠻容易發生的。」'
+        ]
+      }
+    };
+
+    // 複合型態【交互作用】：不顯示「雙重觸發」等標題，單純顯示診斷解析文字，選完權重後只隨機給一則悄悄話
+    const INTERACTION_DATA = {
+      'tech_psych': {
+        spiritType: 'tech_psych',
+        analysis: '你同時選了「技法推進」與「內心焦慮」的卡片。論文研究發現，當某個段落卡住時，很容易立刻引發「我是不是寫得很爛」的自我懷疑；而這份緊張又會反過來讓腦袋更打結。試著先將「情緒」與「文本問題」切開：卡住的只是這一章的結構，不是你這個人的才華。',
+        directions: [
+          {
+            id: 'tech_to_psych',
+            label: '我覺得是「故事卡住 → 讓我開始懷疑自己」比較多',
+            quotes: [
+              '「我覺得我好像做得到，但是事實上試了之後會發現做不到⋯⋯就會覺得自己才華是不是用完了，這一些心態本身就會成為瓶頸。越是想寫完五百字就結束，就越做不到。」',
+              '「因為寫作者不斷寫他就會不斷進步，然後眼界就會不一樣，所以一定會對作品有一些要求，那是對作品內部、自己的要求。」',
+              '「有時候會跟你想要傳達的主題核心、跟原本設定有不一樣的地方，這時候你就要去妥協⋯⋯那都是瓶頸。」'
+            ]
+          },
+          {
+            id: 'psych_to_tech',
+            label: '我覺得是「心裡太緊張 → 導致原本會的技巧施展不開」比較多',
+            quotes: [
+              '「因為我想要製造新的創意，最新的創意就會有新的瓶頸；自己也會不甘心小說跟上一本類似，一定會想超越第一本，所以在試圖超越時又遇到其他問題。」',
+              '「沒有靈感、現在還沒有足夠的材料去填補它的時候，我只能把它放在那邊不去管它，那這可能也算是一種瓶頸。」'
+            ]
+          }
+        ]
+      },
+      'env_psych': {
+        spiritType: 'env_psych',
+        analysis: '外在的評價或時間壓力，正在悄悄消耗你的自信與創作樂趣。這時候硬逼自己迎合外界，只會累積更多職業倦怠。你需要先幫心理降溫，找回「我為什麼想寫這個故事」的初心。',
+        directions: [
+          {
+            id: 'env_to_psych',
+            label: '我覺得是「外在時間與評價 → 讓我心累與自我否定」比較多',
+            quotes: [
+              '「看到別人寫得很好，或者是這本書怎麼賣得那麼好啊！我就沒辦法，這些就會產生瓶頸、產生自我否定。讀者對我有所期待，之前還不是瓶頸的東西，現在會變成是瓶頸。」',
+              '「不被出版社接受就是創作不順，反而不是我自己寫得開不開心⋯⋯為了賺錢去寫一些比較值錢的小說，那個長期的疲勞對我造成的影響是真的，我好累喔。」',
+              '「有時候寫作會被生活影響很多，工作很忙、心情很亂。因為有截稿日的壓力，所以我們要學的比較像是知道有問題，但也只能逼自己放下。」'
+            ]
+          },
+          {
+            id: 'psych_to_env',
+            label: '我覺得是「對自己要求太高 → 所以過度在意讀者眼光」比較多',
+            quotes: [
+              '「持續對自己要求跟不滿，會思考你的受眾會想要看些什麼，然後就會一直自我懷疑：我的受眾真的喜歡這些東西嗎？」',
+              '「我覺得跟自信心低落有關，我一直很少從完成了某種事情或公認的成就中得到快樂⋯⋯總覺得自己其實沒有那麼好。」'
+            ]
+          }
+        ]
+      },
+      'env_tech': {
+        spiritType: 'env_tech',
+        analysis: '為了符合外部的期限或市場框架，你正在挑戰不習慣的寫作節奏或題材。既然這是一場有限制條件的障礙賽，就允許自己「先求完成、再求完美」，適度妥協也是職業寫作者的重要修練。',
+        directions: [
+          {
+            id: 'env_to_tech',
+            label: '我覺得是「時間太趕或規則限制 → 讓故事材料跟不上」比較多',
+            quotes: [
+              '「必須要在很短的時間內去榨出一些東西出來，讓我沒有辦法像以前一樣腦海中充滿自由掉入的素材，所以現在缺乏故事材料，有一大部分是已經沒有那麼有餘裕了。」',
+              '「有時間壓力時，寫的過程中難免會冒出跟預期不太一樣的書寫問題。有時覺得情節效果沒做到夠強，也是受到跨領域工作標準的影響。」'
+            ]
+          },
+          {
+            id: 'tech_to_env',
+            label: '我覺得是「還在摸索文風與寫法 → 帶來退稿或改稿壓力」比較多',
+            quotes: [
+              '「我的寫作前期都在摸索到底什麼是小說，然後我不知道出版社為什麼有的接受、有的不接受。」',
+              '「因為在編輯的階段，他們覺得市場有比較喜歡的方式，就希望往這個方向改，一開始我也覺得整個結構都變了。」'
+            ]
+          }
+        ]
+      }
+    };
+
+    // =========================================================================
+    // 4. 關卡 3：13 張解方扭蛋處方籤（移除所有「作家A/B」與編碼標籤，隨機顯示1則論文訪談）
+    // =========================================================================
+    const GACHA_DATA = [
+      {
+        id: 'G-PAUSE-1',
+        group: 'rest',
+        categoryName: '🌿 微風散步籤 —— 暫停任務策略',
+        title: '帶著故事去散步（背景運算）',
+        action: '【現在你可以做的事】：離開電腦桌 20 分鐘，去散步、游泳、洗澡、吹頭髮，或做點不用動腦的簡單家事。不用刻意逼自己想答案，讓故事像背景程式一樣在腦海裡自由漂浮就好。',
+        science: '當你從事習慣且舒適的規律身體活動時，大腦右腦與預設模式網路（DMN）仍在背景默默運算。很多時候在洗澡或長途開車無人打擾的瞬間，靈感就會自己「叮」一聲算出來了！',
+        paperQuotes: [
+          '「第一時間先去散步⋯⋯散步的時候就會去想那個故事要怎麼接，要怎麼改。做一些你已經習慣的事情就會比較舒適，感到舒適時就會比較多想法從腦子裡出來。」',
+          '「我平常就會去游泳⋯⋯因為你隔絕外界，所以反而可以一邊游一邊思考，那種不會被打擾的時間，其實就可以幫助去想一些平常不會想到的事。」',
+          '「通常要嘛去洗澡或是開車，尤其是長途開車沒有人打擾你的時候，也許問題就會直接解了。可能大腦在無形中一直在運作，只是在那個時間點剛好算出結果。」',
+          '「走跑步機的時候，在一個背景處理的狀況之下，直接去想小說怎麼寫。以前也會打掃家裡，還有洗澡也會。」'
+        ]
+      },
+      {
+        id: 'G-PAUSE-2',
+        group: 'rest',
+        categoryName: '🌿 微風散步籤 —— 暫停任務策略',
+        title: '技術性徹底放空（切斷迴路）',
+        action: '【現在你可以做的事】：今天正式宣布「放假」！關掉文件，去做一件完全不用動寫作腦、單純讓你開心的事（例如：上健身房走跑步機、打電動、睡個好覺）。規定期限內絕對不准打開稿件。',
+        science: '「休息」不是逃避或偷懶，而是「有技術的休息」。當你把所有注意力都死盯著瓶頸時，思緒反而會固化。暫時放掉資訊，等你退回「觀眾」的位置，想寫的慾望自然會再冒出來。',
+        paperQuotes: [
+          '「就算你現在沒在想這件事情，大腦還是會有部分資源在做這件事情，所以去做別的事情時，是讓它能夠慢慢在背景跑⋯⋯面對瓶頸的方式，就是不要把自己逼得太緊了。」',
+          '「暫時放掉資訊，當放掉這些資訊以後，可能就比較像是個觀眾⋯⋯這時反而會有所獲得。放空大概幾天的時間，真的想寫的人，他會繼續寫下去。」',
+          '「如果大腦已經動不了，那就去做一些不用動大腦的事，然後用有技術的方法休息一段時間。」'
+        ]
+      },
+      {
+        id: 'G-PAUSE-3',
+        group: 'rest',
+        categoryName: '🌿 微風散步籤 —— 暫停任務策略',
+        title: '隨手語音備忘錄（移動捕捉）',
+        action: '【現在你可以做的事】：別坐在書桌前乾瞪眼了！出門買杯飲料或騎車兜風，但把手機錄音功能準備好。一旦路上有任何零碎的畫面或台詞閃過，立刻停在路邊用講的錄下來。',
+        science: '有時候換個物理移動的場景，緊繃的語言中樞就會鬆開。用說的比用打字更沒有完美主義的包袱！',
+        paperQuotes: [
+          '「我有時候騎機車會想一件事情，然後停下來開始錄音，因為我要馬上記下來，我把想到的東西用錄音記下來。」',
+          '「有時候遠離電腦時，反而會想到比較多的東西，我最遠離電腦就是出門散步的時候。」'
+        ]
+      },
+      {
+        id: 'G-PAUSE-4',
+        group: 'rest',
+        categoryName: '🌿 微風散步籤 —— 暫停任務策略',
+        title: '跳槽去別的坑玩（任務切換）',
+        action: '【現在你可以做的事】：如果這篇故事現在真的跟你不對盤，那就先把它收進抽屜吧！打開另一個你早就想寫的短篇點子、設定集，或是跳過卡住的這一章，直接去寫後面你最想寫的名場面。',
+        science: '有的故事現在寫不出來，只是因為還沒到最適合把它的時間點。先去寫別的、維持動筆的手感，等天時地利，它自己會再長出來。',
+        paperQuotes: [
+          '「現在遇到寫作瓶頸，會覺得時間可以解決一切。你不一定要說今年一定要寫出來，可以等到適合把這個故事寫出來的時候，再把它寫出來就好。」',
+          '「有的故事，就算你一直放著，當作沒有這回事，到最後還是會冒出來，然後有一天，天時地利還是會把它寫出來。」'
+        ]
+      },
+      {
+        id: 'G-HELP-1',
+        group: 'rest',
+        categoryName: '🍵 尋求支援籤 —— 尋求協助策略',
+        title: '找回文字的呼吸感',
+        action: '【現在你可以做的事】：從書架上抽出一本你最喜歡、讀過好幾遍的小說，或是看一部節奏很棒的電影。不要帶著「做功課」的壓力去讀，單純去感受自己喜歡的作品是怎麼呼吸、怎麼轉折的。',
+        science: '「卡稿其實是自己呼吸不順，寫的時候沒有呼吸感；有時候閱讀別人的作品，會重新學會呼吸的方式。」在喜歡的作品裡感到舒適，新想法就會跟著浮現。',
+        paperQuotes: [
+          '「卡稿就要看別人寫的東西，因為卡稿其實是自己呼吸不順，我寫的時候沒有呼吸感，有時候閱讀別人的作品，我會重新學會呼吸的方式。」',
+          '「找一些你自己以前看過的作品、喜歡的，然後看別人是怎麼去呈現跟解決。我會覺得在看喜歡的小說時會感到舒適，然後就能有新想法。」'
+        ]
+      },
+      {
+        id: 'G-HELP-2',
+        group: 'rest',
+        categoryName: '🍵 尋求支援籤 —— 尋求協助策略',
+        title: '進行一場「正確的聊天」',
+        action: '【現在你可以做的事】：找一位你信任、不會隨便潑你冷水的朋友或創作夥伴，跟對方聊聊你現在卡住的劇情，試著把你的設定講給他聽、甚至試著「說服」他。',
+        science: '這招是受訪作家公認的破關秘訣！重點其實不是對方給了你什麼標準答案，而是「當你必須把腦中一團亂的想法整理出來講給別人聽時，你在講的過程自己就突然想通了！」',
+        paperQuotes: [
+          '「跟別人討論的話，你必須要把自己的想法清楚整理出來給別人聽，在整理的過程你內心也同時在梳理這些東西，然後自己反而想通了！」',
+          '「其實克服瓶頸最常用的方式就是跟信任的夥伴聊天⋯⋯那個聊，是在聊的過程你自己找到的答案，到底也不是說對方給你答案。」',
+          '「我覺得找到『正確的聊天』，真的是太重要了！」'
+        ]
+      },
+      {
+        id: 'G-HELP-3',
+        group: 'rest',
+        categoryName: '🍵 尋求支援籤 —— 尋求協助策略',
+        title: '勇敢申請延長賽',
+        action: '【現在你可以做的事】：如果壓垮你的是不合理的截稿期限或自我進度表，請深呼吸，去跟編輯商量延後交稿，或是親手把自己的行事曆死線往後挪一週。',
+        science: '承認自己現在就是需要更多時間打磨，並不是失敗。把高壓鍋的氣閥打開一點，創造力才能重新運作。',
+        paperQuotes: [
+          '「年輕的時候不太意識到瓶頸，覺得硬去寫出來就好了；現在會對自己比較寬容，承認寫作瓶頸是一個要花力氣與時間去面對的事情。」',
+          '「時間可以解決一切，等到適合把這個故事寫出來的時候再寫出來就好。」'
+        ]
+      },
+      {
+        id: 'G-NEW-1',
+        group: 'rest',
+        categoryName: '🍵 尋求支援籤 —— 尋求協助策略',
+        title: '如果你敢問 AI',
+        action: '【現在你可以做的事】：AI 是雙面刃，正確提問才能得到適當回應，但如果你願意，跟 AI 討論也是個方法，但別忘記你的念頭也會成為 AI 的資料。',
+        science: 'AI 對於機械性文本分析有不錯的能力，而且可以綜整大量資料，如果被迷霧困住，AI 可以協助提供更多樣建議。',
+        paperQuotes: [
+          '「寫作是一種整理自己與世界之間關聯的行動，支持系統不見得就是真實的人類，習慣、書本、網路，以現代來說就連 AI 都可以被視為一種支持來源，重點在於自己有沒有意識到並妥善利用。」',
+          '「在把想法整理出來提問的過程中，你內心也同時在梳理這些東西，自己反而就想通了。」'
+        ]
+      },
+      {
+        id: 'G-FACE-1',
+        group: 'action',
+        categoryName: '⚔️ 破風前行籤 —— 正面對決策略',
+        title: '垃圾也無訪，天知道最後會變什麼',
+        action: '【現在你可以做的事】：在文件最上方打上「【實驗廢稿區——寫爛完全沒關係】」。告訴自己這一段只是拿來試水溫的，就算寫個兩千字最後全部刪掉也無所謂，現在就隨便挑一條分支寫寫看！',
+        science: '許多資深作家常會寫三、四個版本再挑一個，剩下的全廢掉。當你允許自己「寫出會被丟掉的版本」時，完美主義的守門員就會睡著，而你往往會在試寫的過程中摸出真正對的路。',
+        paperQuotes: [
+          '「我會寫三、四個版本，然後選擇一個你要的版本。這些版本其實全部都很完整，在選擇覺得最 OK 的版本後，剩下的版本就是廢掉。我自己都是這樣子寫出來的。」',
+          '「遇到這些瓶頸會覺得說，可能只是還沒有試足夠的方法⋯⋯因為你有試過成功的，就不會想放棄。」'
+        ]
+      },
+      {
+        id: 'G-FACE-2',
+        group: 'action',
+        categoryName: '⚔️ 破風前行籤 —— 正面對決策略',
+        title: '信不信我就給你來硬的',
+        action: '【現在你可以做的事】：設定 15 分鐘，關掉退格鍵（Backspace）的衝動，不求詞藻優美、不檢查邏輯，先用最直白的大白話把這一段劇情「硬推進去」。哪怕寫出一看就知道很爛的東西沒關係，先寫出來再說！',
+        science: '「最怕就是一直想，然後就不寫了！不管對不對、不管是不是最滿意的狀態，至少你寫出來，都是經驗值的累積。」先有粗糙的黏土，之後才有機會雕塑。',
+        paperQuotes: [
+          '「就是動手寫啦！我覺得逼迫自己寫，不管怎麼樣、不管對不對、不管是不是最滿意的狀態，但至少你寫出來，其實都是經驗值的累積。」',
+          '「不要想太多，先寫出來，最怕就是一直想然後就不寫了。你要把寫這件事情變成本能。」'
+        ]
+      },
+      {
+        id: 'G-FACE-3',
+        group: 'action',
+        categoryName: '⚔️ 破風前行籤 —— 正面對決策略',
+        title: '我為何在這裡？我在做什麼？',
+        action: '【現在你可以做的事】：拿出一張空白便籤，只寫下一句話回答這個問題：「撇開所有技巧與讀者評價，我到底為什麼想寫這本小說？我想透過這個故事對世界說什麼？」',
+        science: '當你迷失在枝微末節時，回頭確認「作者意圖」能幫你砍掉多餘的雜枝。只要對作品的愛跟核心意圖夠清晰，你就找得到破關的優先順序。',
+        paperQuotes: [
+          '「如果真的是連寫都不知道該怎麼寫的話，那可能會請他重新思考自己在這本小說裡到底想要講什麼，就是『作者意圖』，要一直確認作者意圖。」',
+          '「就是愛你的作品，雖然非常老生常談，但因為你愛它，你就會一直去想它，越想就越容易解。」'
+        ]
+      },
+      {
+        id: 'G-HABIT-1',
+        group: 'action',
+        categoryName: '⏳ 園丁日常籤 —— 建立紀律策略',
+        title: '讓儀式成為肌肉記憶吧！',
+        action: '【現在你可以做的事】：回想過去哪一次寫作最順暢？當時你是喝什麼飲料、聽什麼音樂、在幾點鐘坐在哪裡？今天把這個組合成為你的「開機儀式」，照著做一次。',
+        science: '「這跟運動員的迷信是一樣的，偶然一次有效、第二次又有效，大腦就會自然相信這件事。」固定的儀式能幫大腦快速建立安全感，縮短進入心流的時間。',
+        paperQuotes: [
+          '「我覺得這跟棒球或是運動員的迷信是一樣的，就是你偶然一次好像有效，第二次又有效，人類的大腦就會自然地相信這一件事情。」'
+        ]
+      },
+      {
+        id: 'G-HABIT-2',
+        group: 'action',
+        categoryName: '⏳ 園丁日常籤 —— 建立紀律策略',
+        title: '想想自己過去怎麼撐過來的',
+        action: '【現在你可以做的事】：在紙上畫一個九宮格（井字），正中央寫下「這場戲的核心衝突」，周圍八格隨意填入可用的場景物件、角色小動作或情緒轉折，用結構工具幫大腦省力。',
+        science: '經驗豐富的作家會建立自己的卡關 SOP（如井字法或結構表），不靠虛無飄渺的繆思女神，而是用穩定的小工具把大難題拆成可執行的小步驟。',
+        paperQuotes: [
+          '「我有列出自己的 SOP，就是當一個作品卡關、卡稿的時候，我是如何用故事結構的方式去處理。」',
+          '「用一些比較實用的方法，比如說井字法偶爾會用，建立屬於自己的寫作標準流程，減少時間浪費。」',
+          '「瓶頸對我來說是一個很類似方法論的東西，我會在腦海中羅列出解決這些瓶頸的 SOP，照著這個方法把瓶頸解決掉。」'
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 5. 關卡 4 & 5：7 種處方箋色調與慕夏圖案主題 + 5 則臨別贈言
+    // =========================================================================
+    const CARD_THEMES = [
+      { id: 'theme-1', name: '晨露嫩芽', bgTop: '#E5F2E0', bgBottom: '#FDF6D8', cardBg: '#FFFFFF', accent: '#3E5D47', softAccent: '#CBE2C3', textMain: '#1F3225', motif: 'sprout', emoji: '🌱' },
+      { id: 'theme-2', name: '暖陽銀杏', bgTop: '#FDF3C7', bgBottom: '#FAF5E4', cardBg: '#FFFEF9', accent: '#756332', softAccent: '#F2E094', textMain: '#3D3318', motif: 'ginkgo', emoji: '🍂' },
+      { id: 'theme-3', name: '胭脂山茶', bgTop: '#F8E8DF', bgBottom: '#FDF3C7', cardBg: '#FFFFFF', accent: '#7A5044', softAccent: '#EED2C4', textMain: '#422A23', motif: 'camellia', emoji: '🌺' },
+      { id: 'theme-4', name: '春茶洋甘菊', bgTop: '#FAF6E6', bgBottom: '#E6F1E2', cardBg: '#FFFFFF', accent: '#556B40', softAccent: '#D8E7C8', textMain: '#2E3B21', motif: 'chamomile', emoji: '🌼' },
+      { id: 'theme-5', name: '微風蒲公英', bgTop: '#E2F0D8', bgBottom: '#F9FBE5', cardBg: '#FFFFFF', accent: '#446838', softAccent: '#C2DFAF', textMain: '#253A1E', motif: 'dandelion', emoji: '🌬️' },
+      { id: 'theme-6', name: '午後橄欖枝', bgTop: '#F4EEE0', bgBottom: '#E5EDE0', cardBg: '#FFFEFA', accent: '#56613E', softAccent: '#D0DCC0', textMain: '#323823', motif: 'olive', emoji: '🫒' },
+      { id: 'theme-7', name: '月光鳶尾花', bgTop: '#E2ECE8', bgBottom: '#F5EFE4', cardBg: '#FCFBF7', accent: '#3B584E', softAccent: '#BBD0C8', textMain: '#21352E', motif: 'iris', emoji: '⚜️' }
+    ];
+
+    const BLESSINGS_DATA = [
+      {
+        title: '【絆腳石與踏腳石】',
+        text: '「腳抬高，絆腳石就變成了踏腳石。寫作瓶頸不是為了阻止你寫作而存在的，它是為了讓你成為更寬容、更認識自己的創作者。」'
+      },
+      {
+        title: '【未完成與完成之間】',
+        text: '「小說就是這樣——寫完就是小說，沒寫完則是『還沒寫完的小說』。在寫完之前的所有停頓與掙扎，都只是必經的自然風景。」'
+      },
+      {
+        title: '【孤獨與連結】',
+        text: '「雖然寫作常常是一個人在荒郊野地的冒險，但別忘了你正在透過故事與世界對話。累的時候，找個夥伴聊聊吧，你不必單打獨鬥。」'
+      },
+      {
+        title: '【專屬於你的喜悅】',
+        text: '「破解難關、寫完作品那一瞬間的爽度與喜悅，或許只有你自己心裡最清楚。但正是這份無可取代的快樂，值得我們一次又一次溫柔地挑戰下去。」'
+      },
+      {
+        title: '【相信上天的指引】',
+        text: '「世上沒有非完成不可的小說，試著面對生命中其他重要的事情，如果這小說注定是要你完成，那最終將會如此；若不是，那又何妨？」'
+      }
+    ];
+
+    // =========================================================================
+    // 6. 全域狀態 (Application State)
+    // =========================================================================
+    const state = {
+      currentStage: 0,
+      stage0CycleIdx: 0,
+      stage0Timer: null,
+      deckPool: [],
+      drawnCards: [],
+      flippedFlags: [false, false, false],
+      redrawCount: 0,
+      inRedrawSelectMode: false,
+      selectedForRedraw: [false, false, false],
+      interactionWeight: {
+        tech_psych: 'tech_to_psych',
+        env_psych: 'env_to_psych',
+        env_tech: 'env_to_tech'
+      },
+      energyMode: 'rest',
+      currentGacha: GACHA_DATA[0],
+      currentEvidenceQuote: '',
+      selectedTheme: CARD_THEMES[0],
+      blessingIndex: 0,
+      stage5LoopActive: false,
+      stage5Timeouts: []
+    };
+
+    // =========================================================================
+    // 7. 舞台切換與關卡 0 循環文案控制
+    // =========================================================================
+    function goToStage(stageNum) {
+      state.currentStage = stageNum;
+      document.querySelectorAll('.stage-container').forEach((el, idx) => {
+        if (idx === stageNum) {
+          el.classList.add('active');
+        } else {
+          el.classList.remove('active');
+        }
+      });
+
+      const topDots = document.getElementById('topStageDots');
+      if (stageNum === 0) {
+        topDots.classList.add('hidden');
+        topDots.classList.remove('flex');
+        startStage0Cycle();
+      } else {
+        topDots.classList.remove('hidden');
+        topDots.classList.add('flex');
+        stopStage0Cycle();
+      }
+
+      document.querySelectorAll('.stage-dot').forEach(dot => {
+        const d = parseInt(dot.getAttribute('data-dot'), 10);
+        if (d === stageNum) {
+          dot.className = 'stage-dot w-4 h-4 rounded-full bg-[#3E5D47] scale-110 transition-all';
+        } else if (d < stageNum) {
+          dot.className = 'stage-dot w-3 h-3 rounded-full bg-[#8FA889] transition-all';
+        } else {
+          dot.className = 'stage-dot w-3 h-3 rounded-full bg-[#CBE2C3] transition-all';
+        }
+      });
+
+      if (stageNum === 5) {
+        startStage5BlessingCycle();
+      } else {
+        stopStage5BlessingCycle();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startStage0Cycle() {
+      stopStage0Cycle();
+      const textEl = document.getElementById('stage0CycleText');
+      if (!textEl) return;
+      state.stage0CycleIdx = 0;
+      textEl.innerHTML = STAGE0_CYCLE_TEXTS[0];
+      textEl.style.opacity = '1';
+
+      state.stage0Timer = setInterval(() => {
+        textEl.style.opacity = '0';
+        setTimeout(() => {
+          state.stage0CycleIdx = (state.stage0CycleIdx + 1) % STAGE0_CYCLE_TEXTS.length;
+          textEl.innerHTML = STAGE0_CYCLE_TEXTS[state.stage0CycleIdx];
+          textEl.style.opacity = '1';
+        }, 1050);
+      }, 6500);
+    }
+
+    function stopStage0Cycle() {
+      if (state.stage0Timer) {
+        clearInterval(state.stage0Timer);
+        state.stage0Timer = null;
+      }
+    }
+
+    function triggerOrbToStage1Transition() {
+      stopStage0Cycle();
+      const wrap = document.getElementById('stage0InnerWrap');
+      const overlay = document.getElementById('aromaTransitionOverlay');
+      const floatText = document.getElementById('aromaFloatingText');
+
+      wrap.style.opacity = '0';
+      wrap.style.pointerEvents = 'none';
+
+      setTimeout(() => {
+        overlay.classList.remove('hidden');
+        floatText.classList.remove('aroma-floating');
+        void floatText.offsetWidth;
+        floatText.classList.add('aroma-floating');
+      }, 550);
+
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        wrap.style.opacity = '1';
+        wrap.style.pointerEvents = 'auto';
+        initStage1CardGame();
+        goToStage(1);
+      }, 3700);
+    }
+
+    // =========================================================================
+    // 8. 關卡 1：【迷霧探索】抽牌、翻牌、重抽（最多3次）邏輯
+    // =========================================================================
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function initStage1CardGame() {
+      state.deckPool = shuffleArray(WOTC_DECK_DATA);
+      state.drawnCards = [];
+      state.flippedFlags = [false, false, false];
+      state.redrawCount = 0;
+      state.inRedrawSelectMode = false;
+      state.selectedForRedraw = [false, false, false];
+
+      document.getElementById('stage1GuideText').textContent = '請抽三張卡，看看是不是你的心情寫照。';
+      document.getElementById('deckPileZone').classList.remove('hidden');
+      document.getElementById('drawnCardsGrid').classList.add('hidden');
+      document.getElementById('redrawControlBar').classList.add('hidden');
+      document.getElementById('redrawSelectionSubBar').classList.add('hidden');
+    }
+
+    function dealInitialThreeCards() {
+      if (state.deckPool.length < 3) {
+        state.deckPool = shuffleArray(WOTC_DECK_DATA);
+      }
+      state.drawnCards = [
+        state.deckPool.pop(),
+        state.deckPool.pop(),
+        state.deckPool.pop()
+      ];
+      state.flippedFlags = [false, false, false];
+
+      document.getElementById('deckPileZone').classList.add('hidden');
+      const grid = document.getElementById('drawnCardsGrid');
+      grid.classList.remove('hidden');
+      document.getElementById('stage1GuideText').textContent = '請輕觸牌背，逐一翻開這三張卡片。';
+
+      renderThreeWotcCards(true);
+    }
+
+    function renderThreeWotcCards(animateDeal = false) {
+      const grid = document.getElementById('drawnCardsGrid');
+      grid.innerHTML = '';
+
+      state.drawnCards.forEach((card, idx) => {
+        const isFlipped = state.flippedFlags[idx];
+        const isMarkedRedraw = state.selectedForRedraw[idx];
+
+        const wrapper = document.createElement('div');
+        wrapper.className = `wotc-card-perspective h-[25.5rem] sm:h-[27rem] ${animateDeal ? 'card-dealing' : ''}`;
+        if (animateDeal) {
+          wrapper.style.animationDelay = `${idx * 0.2}s`;
+        }
+
+        wrapper.innerHTML = `
+          <div id="wotcCardInner-${idx}" class="wotc-card-inner cursor-pointer ${isFlipped ? 'is-flipped' : ''} ${
+            isMarkedRedraw ? 'ring-4 ring-[#3E5D47] scale-[0.98]' : ''
+          }">
+            <!-- 卡牌背面 (正面朝下) -->
+            <div class="wotc-card-face wotc-card-back bg-gradient-to-b from-[#E4F1DF] via-[#FAF8EE] to-[#FDF3C7] border-2 border-[#8FA889] shadow-md p-4 flex flex-col items-center justify-center">
+              <div class="w-full h-full rounded-[22px] border-2 border-[#B6985A]/70 flex flex-col items-center justify-center p-4">
+                <svg class="w-28 h-28 text-[#3E5D47]" viewBox="0 0 120 120" fill="none">
+                  <circle cx="60" cy="60" r="48" stroke="#B6985A" stroke-width="1.6"/>
+                  <circle cx="60" cy="60" r="38" stroke="#8FA889" stroke-width="1.3" stroke-dasharray="4 3"/>
+                  <path d="M60 24C48 38 44 52 60 66C76 52 72 38 60 24Z" fill="#CBE2C3" stroke="#3E5D47" stroke-width="1.8"/>
+                  <path d="M60 96C48 82 44 68 60 54C76 68 72 82 60 96Z" fill="#FDF3C7" stroke="#3E5D47" stroke-width="1.8"/>
+                  <circle cx="60" cy="60" r="7" fill="#FAF8EE" stroke="#3E5D47" stroke-width="1.8"/>
+                </svg>
+                <span class="mt-4 px-5 py-1.5 rounded-full bg-white/95 border border-[#CBE2C3] text-sm font-bold text-[#1F3225] shadow-sm">
+                  點擊翻開第 ${idx + 1} 張卡
+                </span>
+              </div>
+            </div>
+
+            <!-- 卡牌正面 (WotC 卡牌佈局：牌頂圓角標題框、中間慕夏插畫、下方情境描述框；全卡牌統一配色) -->
+            <div class="wotc-card-face wotc-card-front bg-gradient-to-b from-[#FDF3C7] via-[#FAF8EE] to-[#E4F1DF] border-2 border-[#B6985A] shadow-md p-4 flex flex-col justify-between">
+              
+              <!-- 牌頂：圓角標題框 -->
+              <div class="bg-[#FAF8EE] rounded-full px-4 py-2 border-2 border-[#8FA889] flex items-center justify-between shadow-sm">
+                <h3 class="text-base sm:text-lg font-bold text-[#1F3225] truncate">${card.title}</h3>
+                <span class="w-3.5 h-3.5 rounded-full bg-[#CBE2C3] border border-[#3E5D47] shrink-0"></span>
+              </div>
+
+              <!-- 中間：新藝術慕夏風格插畫框 -->
+              <div class="my-2 overflow-hidden rounded-[20px]">
+                ${getMuchaCardArtSVG(card.artType)}
+              </div>
+
+              <!-- 下方：寫作者內心 OS 情境框（字體清晰易讀、高對比、無編號） -->
+              <div class="bg-white/95 rounded-[20px] p-4 border border-[#8FA889]/80 flex-1 flex flex-col justify-center">
+                <p class="text-sm sm:text-[15px] text-[#1F3225] font-medium leading-relaxed">
+                  ${card.os}
+                </p>
+              </div>
+
+              <!-- 重抽選取標記提示 -->
+              ${state.inRedrawSelectMode ? `
+                <div class="mt-2 text-center">
+                  <span class="inline-block px-4 py-1 rounded-full text-xs font-bold ${
+                    isMarkedRedraw
+                      ? 'bg-[#3E5D47] text-white'
+                      : 'bg-white/95 text-[#3E5D47] border border-[#8FA889]'
+                  }">
+                    ${isMarkedRedraw ? '✓ 已選取重抽此卡' : '點選此卡可替換'}
+                  </span>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+
+        wrapper.addEventListener('click', () => handleWotcCardClick(idx));
+        grid.appendChild(wrapper);
+      });
+    }
+
+    function handleWotcCardClick(idx) {
+      if (!state.flippedFlags[idx]) {
+        state.flippedFlags[idx] = true;
+        const inner = document.getElementById(`wotcCardInner-${idx}`);
+        if (inner) inner.classList.add('is-flipped');
+
+        if (state.flippedFlags.every(Boolean)) {
+          setTimeout(() => {
+            updatePostFlipPrompt();
+          }, 750);
+        }
+        return;
+      }
+
+      if (state.inRedrawSelectMode) {
+        state.selectedForRedraw[idx] = !state.selectedForRedraw[idx];
+        renderThreeWotcCards(false);
+        document.getElementById('confirmRedrawSelectedBtn').disabled = !state.selectedForRedraw.some(Boolean);
+      }
+    }
+
+    function updatePostFlipPrompt() {
+      const guideEl = document.getElementById('stage1GuideText');
+      const controlBar = document.getElementById('redrawControlBar');
+      const redrawBtn = document.getElementById('enterRedrawModeBtn');
+      const subBar = document.getElementById('redrawSelectionSubBar');
+
+      controlBar.classList.remove('hidden');
+      subBar.classList.add('hidden');
+      subBar.classList.remove('flex');
+      state.inRedrawSelectMode = false;
+      state.selectedForRedraw = [false, false, false];
+
+      if (state.redrawCount === 0) {
+        guideEl.textContent = '請問有沒有想要換的卡片，只能重抽一次喔！';
+        redrawBtn.classList.remove('hidden');
+      } else if (state.redrawCount < 3) {
+        guideEl.textContent = '請問有沒有想要換的卡片，只能重抽一次喔！';
+        redrawBtn.classList.remove('hidden');
+      } else {
+        guideEl.textContent = '三張卡片已確認完成，請點選下方按鈕繼續。';
+        redrawBtn.classList.add('hidden');
+      }
+    }
+
+    function executeRedrawCards(indicesToReplace, returnToDeckScreen = false) {
+      if (state.redrawCount >= 3 || indicesToReplace.length === 0) return;
+      state.redrawCount++;
+      state.inRedrawSelectMode = false;
+      state.selectedForRedraw = [false, false, false];
+      document.getElementById('redrawSelectionSubBar').classList.add('hidden');
+      document.getElementById('redrawSelectionSubBar').classList.remove('flex');
+
+      // 若選擇回到前一個牌疊畫面全部重抽
+      if (returnToDeckScreen) {
+        document.getElementById('drawnCardsGrid').classList.add('hidden');
+        document.getElementById('redrawControlBar').classList.add('hidden');
+        document.getElementById('deckPileZone').classList.remove('hidden');
+        document.getElementById('stage1GuideText').textContent = '請抽三張卡，看看是不是你的心情寫照。';
+        return;
+      }
+
+      indicesToReplace.forEach(idx => {
+        if (state.deckPool.length === 0) {
+          state.deckPool = shuffleArray(WOTC_DECK_DATA);
+        }
+        let nextCard = state.deckPool.pop();
+        const currentIds = state.drawnCards.map(c => c.id);
+        while (currentIds.includes(nextCard.id) && state.deckPool.length > 0) {
+          nextCard = state.deckPool.pop();
+        }
+        state.drawnCards[idx] = nextCard;
+        state.flippedFlags[idx] = false; // 抽出的新卡正面朝下，讓使用者慢慢翻開
+      });
+
+      document.getElementById('redrawControlBar').classList.add('hidden');
+      document.getElementById('stage1GuideText').textContent = '已為你換上新卡，請輕觸牌背翻開。';
+      renderThreeWotcCards(false);
+
+      indicesToReplace.forEach(idx => {
+        const inner = document.getElementById(`wotcCardInner-${idx}`);
+        if (inner && inner.parentElement) {
+          inner.parentElement.classList.add('card-redrawing');
+        }
+      });
+    }
+
+    // =========================================================================
+    // 9. 關卡 2：【瓶頸圖鑑】統一慕夏介面渲染（無作家代號、無雙重觸發標題、每區塊隨機1則不設切換）
+    // =========================================================================
+    function renderStage2Pokedex() {
+      const container = document.getElementById('pokedexCardsList');
+      container.innerHTML = '';
+
+      const catsSet = new Set();
+      state.drawnCards.forEach(c => catsSet.add(c.category));
+      const categories = catsSet.size > 0 ? Array.from(catsSet) : ['tech'];
+
+      const itemsToRender = [];
+      categories.forEach(cat => {
+        if (POKEDEX_DATA[cat]) {
+          itemsToRender.push({ mode: 'single', key: cat, data: POKEDEX_DATA[cat] });
+        }
+      });
+
+      if (categories.includes('tech') && categories.includes('psych')) {
+        itemsToRender.push({ mode: 'interaction', key: 'tech_psych', data: INTERACTION_DATA.tech_psych });
+      }
+      if (categories.includes('env') && categories.includes('psych')) {
+        itemsToRender.push({ mode: 'interaction', key: 'env_psych', data: INTERACTION_DATA.env_psych });
+      }
+      if (categories.includes('env') && categories.includes('tech')) {
+        itemsToRender.push({ mode: 'interaction', key: 'env_tech', data: INTERACTION_DATA.env_tech });
+      }
+
+      itemsToRender.forEach((item, index) => {
+        const cardEl = document.createElement('article');
+        cardEl.className = 'bg-white/95 rounded-[36px] p-6 sm:p-9 border-2 border-[#CBE2C3] shadow-sm space-y-6';
+
+        if (item.mode === 'single') {
+          const d = item.data;
+          // 每次遊玩隨機抽出 1 則悄悄話，不顯示作家 A/B，也不提供切換別則的按鈕
+          const randomQuote = d.quotes[Math.floor(Math.random() * d.quotes.length)];
+
+          cardEl.innerHTML = `
+            <div class="flex flex-col md:flex-row items-center gap-6">
+              <div class="shrink-0">
+                ${getMuchaSpiritSVG(d.spiritType)}
+              </div>
+              <div class="space-y-3 text-center md:text-left">
+                <h2 class="text-xl sm:text-2xl font-bold text-[#1F3225]">${d.name}</h2>
+                <p class="text-base sm:text-lg text-[#1F3225] leading-relaxed bg-[#FAF8EE] p-5 rounded-[24px] border border-[#CBE2C3]">
+                  ${d.analysis}
+                </p>
+              </div>
+            </div>
+
+            <div class="pt-2 text-center">
+              <button
+                type="button"
+                data-whisper-box="whisper-single-${index}"
+                class="toggle-whisper-btn pill-btn px-6 py-3 bg-[#FDF3C7] hover:bg-[#F7E69B] text-[#1F3225] border-2 border-[#B6985A]/70 font-bold text-sm sm:text-base shadow-sm"
+              >
+                💬 現役作家的共鳴悄悄話
+              </button>
+
+              <div
+                id="whisper-single-${index}"
+                class="hidden mt-4 p-5 sm:p-6 rounded-[28px] bg-gradient-to-br from-[#FDF3C7]/75 to-[#E4F1DF]/75 border border-[#8FA889] text-left transition-opacity duration-700"
+              >
+                <p class="text-base sm:text-lg text-[#1F3225] font-medium leading-relaxed">
+                  ${randomQuote}
+                </p>
+              </div>
+            </div>
+          `;
+        } else {
+          // 複合型態：與單一類型完全相同的圓拱卡片版型，不顯示「雙重觸發」等標題，單純顯示診斷解析文字
+          // 點擊「現役作家的共鳴悄悄話」後，先讓使用者選擇權重（誰影響誰），選擇後即顯示隨機 1 則對應訪談文字（鎖定1則，不設換看按鈕）
+          const d = item.data;
+
+          cardEl.innerHTML = `
+            <div class="flex flex-col md:flex-row items-center gap-6">
+              <div class="shrink-0">
+                ${getMuchaSpiritSVG(d.spiritType)}
+              </div>
+              <div class="space-y-3 text-center md:text-left flex-1">
+                <p class="text-base sm:text-lg text-[#1F3225] leading-relaxed bg-[#FAF8EE] p-5 sm:p-6 rounded-[24px] border border-[#CBE2C3]">
+                  ${d.analysis}
+                </p>
+              </div>
+            </div>
+
+            <div class="pt-2 text-center">
+              <button
+                type="button"
+                data-whisper-box="whisper-inter-${index}"
+                class="toggle-whisper-btn pill-btn px-6 py-3 bg-[#FDF3C7] hover:bg-[#F7E69B] text-[#1F3225] border-2 border-[#B6985A]/70 font-bold text-sm sm:text-base shadow-sm"
+              >
+                💬 現役作家的共鳴悄悄話
+              </button>
+
+              <div
+                id="whisper-inter-${index}"
+                class="hidden mt-4 p-5 sm:p-6 rounded-[28px] bg-gradient-to-br from-[#FDF3C7]/75 to-[#E4F1DF]/75 border border-[#8FA889] text-left space-y-4 transition-opacity duration-700"
+              >
+                <div class="inter-weight-prompt space-y-3">
+                  <div class="text-sm sm:text-base font-bold text-[#1F3225] text-center">請選擇哪一邊的感受比較貼近你現在的狀態：</div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    ${d.directions.map(dir => `
+                      <button
+                        type="button"
+                        data-pair-key="${item.key}"
+                        data-dir-id="${dir.id}"
+                        data-target-box="whisper-inter-${index}"
+                        class="inter-weight-btn pill-btn px-5 py-3.5 text-left text-sm sm:text-base font-bold border-2 bg-white/95 text-[#1F3225] border-[#8FA889] hover:bg-[#E4F1DF] transition-all"
+                      >
+                        ${dir.label}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <div class="inter-quote-result hidden bg-white/95 p-5 rounded-[22px] border border-[#CBE2C3]">
+                  <p class="inter-quote-text text-base sm:text-lg text-[#1F3225] font-medium leading-relaxed"></p>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        container.appendChild(cardEl);
+      });
+
+      // 綁定展開「現役作家的共鳴悄悄話」按鈕
+      container.querySelectorAll('.toggle-whisper-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const boxId = btn.getAttribute('data-whisper-box');
+          const box = document.getElementById(boxId);
+          if (box) {
+            box.classList.toggle('hidden');
+          }
+        });
+      });
+
+      // 綁定複合型態權重選擇（先選擇誰影響誰，選完後淡入顯示隨機 1 則對應訪談文字）
+      container.querySelectorAll('.inter-weight-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pairKey = btn.getAttribute('data-pair-key');
+          const dirId = btn.getAttribute('data-dir-id');
+          const boxId = btn.getAttribute('data-target-box');
+          state.interactionWeight[pairKey] = dirId;
+
+          const box = document.getElementById(boxId);
+          const promptWrap = box.querySelector('.inter-weight-prompt');
+          const resultWrap = box.querySelector('.inter-quote-result');
+          const dirObj = INTERACTION_DATA[pairKey].directions.find(d => d.id === dirId);
+          const randomOneQuote = dirObj.quotes[Math.floor(Math.random() * dirObj.quotes.length)];
+
+          promptWrap.classList.add('hidden');
+          box.querySelector('.inter-quote-text').textContent = randomOneQuote;
+          resultWrap.classList.remove('hidden');
+        });
+      });
+    }
+
+    // =========================================================================
+    // 10. 關卡 3：【解方扭蛋機／幸運籤餅處方籤】邏輯
+    // =========================================================================
+    function resetGachaStage() {
+      const centerStage = document.getElementById('gachaCenterStage');
+      const slipStage = document.getElementById('fortuneSlipStage');
+      const dropWrap = document.getElementById('droppedCapsuleWrap');
+      const knobBar = document.getElementById('gachaKnobBar');
+
+      centerStage.classList.remove('hidden');
+      centerStage.style.opacity = '1';
+      slipStage.classList.add('hidden');
+      slipStage.style.opacity = '0';
+      dropWrap.classList.add('hidden');
+      knobBar.style.transform = 'rotate(0deg)';
+    }
+
+    function spinAndDropCapsule() {
+      const pool = GACHA_DATA.filter(g => g.group === state.energyMode);
+      const candidates = pool.filter(g => g.id !== state.currentGacha.id);
+      const chooseFrom = candidates.length > 0 ? candidates : pool;
+      state.currentGacha = chooseFrom[Math.floor(Math.random() * chooseFrom.length)];
+      state.currentEvidenceQuote = state.currentGacha.paperQuotes[Math.floor(Math.random() * state.currentGacha.paperQuotes.length)];
+
+      const knobBar = document.getElementById('gachaKnobBar');
+      knobBar.style.transform = 'rotate(180deg)';
+
+      setTimeout(() => {
+        const dropWrap = document.getElementById('droppedCapsuleWrap');
+        dropWrap.classList.remove('hidden');
+      }, 520);
+    }
+
+    function openCapsuleToFortuneSlip() {
+      const centerStage = document.getElementById('gachaCenterStage');
+      const slipStage = document.getElementById('fortuneSlipStage');
+      const actionView = document.getElementById('slipActionView');
+      const evidenceView = document.getElementById('slipEvidenceView');
+
+      centerStage.style.opacity = '0';
+      setTimeout(() => {
+        centerStage.classList.add('hidden');
+        populateFortuneSlip();
+
+        actionView.classList.remove('hidden');
+        actionView.style.opacity = '1';
+        evidenceView.classList.add('hidden');
+        evidenceView.style.opacity = '0';
+
+        slipStage.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          slipStage.style.opacity = '1';
+        });
+      }, 650);
+    }
+
+    function populateFortuneSlip() {
+      const g = state.currentGacha;
+      document.getElementById('slipCategoryBadge').textContent = g.categoryName;
+      document.getElementById('slipTitleText').textContent = `【${g.title}】`;
+      document.getElementById('slipActionText').textContent = g.action;
+      document.getElementById('evidenceTitleTag').textContent = `【${g.title}】`;
+      document.getElementById('slipScienceText').textContent = g.science;
+      document.getElementById('slipRandomQuoteText').textContent = state.currentEvidenceQuote;
+    }
+
+    // 點擊「為什麼這招有效？」：處方籤正面淡出 -> 作家實證文字淡入浮現
+    function transitionSlipToEvidence() {
+      const actionView = document.getElementById('slipActionView');
+      const evidenceView = document.getElementById('slipEvidenceView');
+
+      actionView.style.opacity = '0';
+      setTimeout(() => {
+        actionView.classList.add('hidden');
+        evidenceView.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          evidenceView.style.opacity = '1';
+        });
+      }, 650);
+    }
+
+    function transitionEvidenceBackToSlip() {
+      const actionView = document.getElementById('slipActionView');
+      const evidenceView = document.getElementById('slipEvidenceView');
+
+      evidenceView.style.opacity = '0';
+      setTimeout(() => {
+        evidenceView.classList.add('hidden');
+        actionView.classList.remove('hidden');
+        requestAnimationFrame(() => {
+          actionView.style.opacity = '1';
+        });
+      }, 650);
+    }
+
+    // =========================================================================
+    // 11. 關卡 4：【種子成長日記】7款主題處方箋繪製與轉場至關卡 5
+    // =========================================================================
+    function renderStage4ThemeButtons() {
+      const composeContainer = document.getElementById('themePillsContainer');
+      const formalContainer = document.getElementById('formalThemeQuickSwitch');
+      composeContainer.innerHTML = '';
+      formalContainer.innerHTML = '';
+
+      CARD_THEMES.forEach(theme => {
+        const isSel = state.selectedTheme.id === theme.id;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `pill-btn px-3.5 py-2.5 border-2 flex items-center gap-2 text-left ${
+          isSel
+            ? 'border-[#3E5D47] bg-white shadow-sm font-bold'
+            : 'border-[#CBE2C3] bg-white/75 hover:bg-white font-medium'
+        }`;
+        btn.innerHTML = `
+          <span class="w-7 h-7 rounded-full flex items-center justify-center text-sm shrink-0 border border-[#8FA889]" style="background: linear-gradient(135deg, ${theme.bgTop}, ${theme.softAccent})">
+            ${theme.emoji}
+          </span>
+          <span class="text-xs sm:text-sm text-[#1F3225] truncate">${theme.name}</span>
+        `;
+        btn.addEventListener('click', () => {
+          state.selectedTheme = theme;
+          renderStage4ThemeButtons();
+          renderPrescriptionCanvas();
+        });
+        composeContainer.appendChild(btn);
+
+        const dotBtn = document.createElement('button');
+        dotBtn.type = 'button';
+        dotBtn.className = `pill-btn px-3.5 py-1.5 border-2 text-xs font-bold flex items-center gap-1.5 ${
+          isSel ? 'border-[#3E5D47] bg-[#FDF3C7]' : 'border-[#CBE2C3] bg-white'
+        }`;
+        dotBtn.innerHTML = `<span>${theme.emoji}</span><span>${theme.name}</span>`;
+        dotBtn.addEventListener('click', () => {
+          state.selectedTheme = theme;
+          renderStage4ThemeButtons();
+          renderPrescriptionCanvas();
+        });
+        formalContainer.appendChild(dotBtn);
+      });
+    }
+
+    function drawMuchaBotanicalMotif(ctx, motif, accentColor, softColor) {
+      ctx.save();
+      ctx.strokeStyle = accentColor;
+      ctx.fillStyle = softColor;
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.arc(670, 155, 54, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = '#B6985A';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(670, 155, 62, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = accentColor;
+      ctx.fillStyle = '#FAF8EE';
+      ctx.lineWidth = 2.5;
+
+      if (motif === 'sprout') {
+        ctx.beginPath();
+        ctx.moveTo(670, 195);
+        ctx.quadraticCurveTo(670, 145, 695, 125);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(688, 138, 20, 10, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(652, 152, 18, 9, 0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else if (motif === 'ginkgo') {
+        ctx.beginPath();
+        ctx.moveTo(670, 195);
+        ctx.lineTo(670, 160);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(670, 160, 34, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.lineTo(670, 160);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      } else if (motif === 'camellia') {
+        for (let a = 0; a < 6; a++) {
+          const rad = (a * Math.PI) / 3;
+          ctx.beginPath();
+          ctx.arc(670 + Math.cos(rad) * 16, 155 + Math.sin(rad) * 16, 14, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.fillStyle = '#FDF3C7';
+        ctx.beginPath();
+        ctx.arc(670, 155, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else if (motif === 'chamomile') {
+        for (let a = 0; a < 8; a++) {
+          const rad = (a * Math.PI) / 4;
+          ctx.save();
+          ctx.translate(670 + Math.cos(rad) * 20, 155 + Math.sin(rad) * 20);
+          ctx.rotate(rad);
+          ctx.beginPath();
+          ctx.ellipse(0, 0, 12, 6, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
+        }
+        ctx.fillStyle = '#F2D665';
+        ctx.beginPath();
+        ctx.arc(670, 155, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else if (motif === 'dandelion') {
+        for (let a = 0; a < 10; a++) {
+          const rad = (a * Math.PI) / 5;
+          ctx.beginPath();
+          ctx.moveTo(670, 155);
+          ctx.lineTo(670 + Math.cos(rad) * 28, 155 + Math.sin(rad) * 28);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(670 + Math.cos(rad) * 30, 155 + Math.sin(rad) * 30, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+      } else if (motif === 'olive') {
+        ctx.beginPath();
+        ctx.moveTo(640, 180);
+        ctx.quadraticCurveTo(670, 150, 700, 130);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(662, 148, 13, 6, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(680, 162, 13, 6, 0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.ellipse(670, 142, 12, 24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(652, 158, 18, 9, -0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(688, 158, 18, 9, 0.6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawWrappedCanvasText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 5) {
+      const chars = Array.from(text);
+      let line = '';
+      let lineCount = 0;
+      for (let i = 0; i < chars.length; i++) {
+        const testLine = line + chars[i];
+        if (ctx.measureText(testLine).width > maxWidth && line !== '') {
+          ctx.fillText(line, x, y);
+          line = chars[i];
+          y += lineHeight;
+          lineCount++;
+          if (lineCount >= maxLines - 1 && i < chars.length - 1) {
+            line += '⋯';
+            break;
+          }
+        } else {
+          line = testLine;
+        }
+      }
+      if (line) {
+        ctx.fillText(line, x, y);
+      }
+    }
+
+    function renderPrescriptionCanvas() {
+      const canvas = document.getElementById('prescriptionCardCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const theme = state.selectedTheme;
+      const gacha = state.currentGacha;
+      const blessing = BLESSINGS_DATA[state.blessingIndex];
+      const userNote = document.getElementById('journalNoteInput').value.trim() || '今天決定溫柔善待自己與作品，允許故事按照自己的步調慢慢發芽。';
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      const grad = ctx.createLinearGradient(0, 0, 800, 1020);
+      grad.addColorStop(0, theme.bgTop);
+      grad.addColorStop(1, theme.bgBottom);
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 800, 1020);
+
+      ctx.fillStyle = theme.cardBg;
+      ctx.strokeStyle = '#B6985A';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(44, 44, 712, 932, 48);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = theme.softAccent;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(58, 58, 684, 904, 40);
+      ctx.stroke();
+
+      drawMuchaBotanicalMotif(ctx, theme.motif, theme.accent, theme.softAccent);
+
+      ctx.fillStyle = theme.accent;
+      ctx.font = '700 24px "Noto Sans TC", sans-serif';
+      ctx.fillText('拾葉書房｜寫作者的陪伴處方箋', 92, 125);
+
+      ctx.fillStyle = '#4A6050';
+      ctx.font = '500 18px "Inter", "Noto Sans TC", sans-serif';
+      ctx.fillText(`${todayStr}  ·  主題：${theme.name}`, 92, 162);
+
+      ctx.fillStyle = theme.softAccent;
+      ctx.beginPath();
+      ctx.roundRect(88, 228, 624, 245, 32);
+      ctx.fill();
+
+      ctx.fillStyle = theme.accent;
+      ctx.font = '700 20px "Noto Sans TC", sans-serif';
+      ctx.fillText(gacha.categoryName, 118, 272);
+
+      ctx.fillStyle = theme.textMain;
+      ctx.font = '700 28px "Noto Sans TC", sans-serif';
+      ctx.fillText(`【${gacha.title}】`, 114, 318);
+
+      ctx.fillStyle = theme.textMain;
+      ctx.font = '500 21px "Noto Sans TC", sans-serif';
+      drawWrappedCanvasText(ctx, gacha.action, 118, 364, 564, 34, 3);
+
+      ctx.fillStyle = '#FAF8EE';
+      ctx.strokeStyle = '#B6985A';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(88, 502, 624, 200, 32);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = theme.accent;
+      ctx.font = '700 21px "Noto Sans TC", sans-serif';
+      ctx.fillText('🌱 今日的轉化微光決定：', 118, 548);
+
+      ctx.fillStyle = theme.textMain;
+      ctx.font = '600 23px "Noto Sans TC", sans-serif';
+      drawWrappedCanvasText(ctx, `「${userNote}」`, 118, 594, 564, 36, 3);
+
+      ctx.fillStyle = theme.accent;
+      ctx.font = '700 20px "Noto Sans TC", sans-serif';
+      ctx.fillText(`✨ 溫室贈言 ${blessing.title}`, 92, 756);
+
+      ctx.fillStyle = theme.textMain;
+      ctx.font = '500 21px "Noto Sans TC", sans-serif';
+      drawWrappedCanvasText(ctx, blessing.text, 92, 796, 616, 34, 3);
+
+      ctx.fillStyle = '#5A7060';
+      ctx.font = '500 16px "Noto Sans TC", sans-serif';
+      ctx.fillText('拾葉書房｜卡關別擔心，故事終究會發芽（改編自詹子藝 2024 轉化學習研究）', 92, 932);
+    }
+
+    // =========================================================================
+    // 12. 關卡 5：【臨別贈言】10秒隨機浮現（每批4秒淡入）-> 完整顯示10秒 -> 10秒隨機消失（每批4秒淡出）循環
+    // =========================================================================
+    function clearStage5Timeouts() {
+      state.stage5Timeouts.forEach(t => clearTimeout(t));
+      state.stage5Timeouts = [];
+    }
+
+    function stopStage5BlessingCycle() {
+      state.stage5LoopActive = false;
+      clearStage5Timeouts();
+    }
+
+    function startStage5BlessingCycle() {
+      stopStage5BlessingCycle();
+      state.stage5LoopActive = true;
+      runSingleBlessingSequence(state.blessingIndex);
+    }
+
+    function runSingleBlessingSequence(idx) {
+      if (!state.stage5LoopActive) return;
+      const item = BLESSINGS_DATA[idx];
+      const titleWrap = document.getElementById('stage5BlessingTitleWrap');
+      const textWrap = document.getElementById('stage5BlessingCharsP');
+      if (!titleWrap || !textWrap) return;
+
+      titleWrap.innerHTML = '';
+      textWrap.innerHTML = '';
+
+      const allSpans = [];
+
+      // 建立標題字元 span
+      Array.from(item.title).forEach(ch => {
+        const sp = document.createElement('span');
+        sp.className = 'char-cell';
+        sp.textContent = ch;
+        sp.style.opacity = '0';
+        sp.style.transform = 'translateY(10px)';
+        titleWrap.appendChild(sp);
+        allSpans.push(sp);
+      });
+
+      // 建立內文字元 span
+      Array.from(item.text).forEach(ch => {
+        const sp = document.createElement('span');
+        sp.className = 'char-cell';
+        sp.textContent = ch;
+        sp.style.opacity = '0';
+        sp.style.transform = 'translateY(10px)';
+        textWrap.appendChild(sp);
+        allSpans.push(sp);
+      });
+
+      // 階段一：用 10 秒時間讓字隨機浮現，每批標題與文字用淡入方式花 4 秒出現（啟動時間分佈於 0 ~ 6000ms，加上 4000ms CSS transition 剛好 10 秒全部浮現完畢）
+      const appearOrder = shuffleArray(allSpans.map((_, i) => i));
+      const batchCount = 6;
+      appearOrder.forEach((spanIdx, pos) => {
+        const batchIndex = pos % batchCount;
+        const batchDelay = (batchIndex / (batchCount - 1)) * 6000;
+        const t = setTimeout(() => {
+          if (!state.stage5LoopActive) return;
+          allSpans[spanIdx].style.opacity = '1';
+          allSpans[spanIdx].style.transform = 'translateY(0px)';
+        }, batchDelay);
+        state.stage5Timeouts.push(t);
+      });
+
+      // 階段二：10 秒浮現完成後，完整顯示 10 秒（即在 20,000ms 時開始隨機消失）
+      const startVanishTimer = setTimeout(() => {
+        if (!state.stage5LoopActive) return;
+        const vanishOrder = shuffleArray(allSpans.map((_, i) => i));
+        vanishOrder.forEach((spanIdx, pos) => {
+          const batchIndex = pos % batchCount;
+          const batchDelay = (batchIndex / (batchCount - 1)) * 6000;
+          const vt = setTimeout(() => {
+            if (!state.stage5LoopActive) return;
+            allSpans[spanIdx].style.opacity = '0';
+            allSpans[spanIdx].style.transform = 'translateY(-10px)';
+          }, batchDelay);
+          state.stage5Timeouts.push(vt);
+        });
+
+        // 階段三：10 秒消失完成後（6000ms 分批 + 4000ms 淡出 = 10,000ms），換下一段金句循環
+        const nextCycleTimer = setTimeout(() => {
+          if (!state.stage5LoopActive) return;
+          state.blessingIndex = (idx + 1) % BLESSINGS_DATA.length;
+          runSingleBlessingSequence(state.blessingIndex);
+        }, 10200);
+        state.stage5Timeouts.push(nextCycleTimer);
+
+      }, 20000);
+
+      state.stage5Timeouts.push(startVanishTimer);
+    }
+
+    // =========================================================================
+    // 13. 事件綁定與初始化
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      startStage0Cycle();
+      renderStage4ThemeButtons();
+
+      // 頁首回到開頭
+      document.getElementById('headerHomeBtn').addEventListener('click', () => {
+        goToStage(0);
+      });
+
+      // 關卡 0：點擊呼吸光球
+      document.getElementById('breathingOrbBtn').addEventListener('click', () => {
+        triggerOrbToStage1Transition();
+      });
+
+      // 關卡 1：點擊牌疊抽出三張卡
+      document.getElementById('drawDeckPileBtn').addEventListener('click', () => {
+        dealInitialThreeCards();
+      });
+
+      // 關卡 1：「我要重抽」與「我抽完了」
+      document.getElementById('enterRedrawModeBtn').addEventListener('click', () => {
+        state.inRedrawSelectMode = true;
+        state.selectedForRedraw = [false, false, false];
+        const subBar = document.getElementById('redrawSelectionSubBar');
+        subBar.classList.remove('hidden');
+        subBar.classList.add('flex');
+        document.getElementById('confirmRedrawSelectedBtn').disabled = true;
+        renderThreeWotcCards(false);
+      });
+
+      document.getElementById('confirmRedrawSelectedBtn').addEventListener('click', () => {
+        const indices = [];
+        state.selectedForRedraw.forEach((flag, idx) => {
+          if (flag) indices.push(idx);
+        });
+        executeRedrawCards(indices, false);
+      });
+
+      document.getElementById('redrawAllThreeBtn').addEventListener('click', () => {
+        executeRedrawCards([0, 1, 2], true);
+      });
+
+      document.getElementById('finishDrawBtn').addEventListener('click', () => {
+        renderStage2Pokedex();
+        goToStage(2);
+      });
+
+      // 關卡 2 -> 關卡 3
+      document.getElementById('toStage3Btn').addEventListener('click', () => {
+        resetGachaStage();
+        goToStage(3);
+      });
+
+      // 關卡 3：能量選擇、扭蛋旋鈕、點擊打開扭蛋、「為什麼這招有效？」畫面淡出切換
+      document.querySelectorAll('.energy-choice-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.energyMode = btn.getAttribute('data-energy');
+          document.querySelectorAll('.energy-choice-btn').forEach(b => {
+            if (b.getAttribute('data-energy') === state.energyMode) {
+              b.className = 'energy-choice-btn pill-btn px-6 py-2.5 border-2 border-[#3E5D47] bg-[#E4F1DF] text-[#1F3225] font-bold text-sm sm:text-base';
+            } else {
+              b.className = 'energy-choice-btn pill-btn px-6 py-2.5 border-2 border-[#8FA889] bg-white hover:bg-[#FDF3C7]/60 text-[#3E5544] font-bold text-sm sm:text-base';
+            }
+          });
+          resetGachaStage();
+        });
+      });
+
+      document.getElementById('spinGachaKnobBtn').addEventListener('click', () => {
+        spinAndDropCapsule();
+      });
+
+      document.getElementById('openDroppedCapsuleBtn').addEventListener('click', () => {
+        openCapsuleToFortuneSlip();
+      });
+
+      document.getElementById('whyEffectiveBtn').addEventListener('click', () => {
+        transitionSlipToEvidence();
+      });
+
+      document.getElementById('backToSlipActionBtn').addEventListener('click', () => {
+        transitionEvidenceBackToSlip();
+      });
+
+      document.getElementById('redrawGachaBtn').addEventListener('click', () => {
+        resetGachaStage();
+      });
+
+      document.getElementById('toStage4Btn').addEventListener('click', () => {
+        document.getElementById('journalComposeStep').classList.remove('hidden');
+        document.getElementById('formalPrescriptionStep').classList.add('hidden');
+        goToStage(4);
+      });
+
+      // 關卡 4：仿 X 字數上限計數器與快速帶入
+      const noteInput = document.getElementById('journalNoteInput');
+      const countLabel = document.getElementById('xCharCountLabel');
+      const progressCircle = document.getElementById('xCharProgressCircle');
+      const circumference = 2 * Math.PI * 10;
+
+      function updateCharCounter() {
+        const len = noteInput.value.length;
+        countLabel.textContent = `${len} / 140`;
+        const offset = circumference - (len / 140) * circumference;
+        progressCircle.style.strokeDashoffset = Math.max(0, offset);
+      }
+
+      noteInput.addEventListener('input', updateCharCounter);
+
+      document.querySelectorAll('.quick-fill-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          noteInput.value = btn.textContent.replace(/^＋\s*/, '').trim();
+          updateCharCounter();
+        });
+      });
+
+      // 點選「將決定化為養分，收下今日處方箋」-> 水滴澆灌樹苗 -> 顯示正式處方箋畫面
+      document.getElementById('submitNourishBtn').addEventListener('click', () => {
+        const dropIcon = document.getElementById('waterDropIcon');
+        const treeEmoji = document.getElementById('sproutTreeEmoji');
+        dropIcon.classList.remove('hidden', 'water-drop-anim');
+        void dropIcon.offsetWidth;
+        dropIcon.classList.add('water-drop-anim');
+
+        setTimeout(() => {
+          treeEmoji.textContent = '🌿';
+          treeEmoji.classList.add('scale-125');
+        }, 550);
+
+        setTimeout(() => {
+          document.getElementById('journalComposeStep').classList.add('hidden');
+          document.getElementById('formalPrescriptionStep').classList.remove('hidden');
+          renderPrescriptionCanvas();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 1150);
+      });
+
+      // 下載處方箋 PNG
+      document.getElementById('downloadCardImgBtn').addEventListener('click', () => {
+        renderPrescriptionCanvas();
+        const canvas = document.getElementById('prescriptionCardCanvas');
+        const link = document.createElement('a');
+        link.download = `拾葉書房_寫作處方箋_${state.selectedTheme.name}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        const msg = document.getElementById('shareFeedbackMsg');
+        msg.textContent = '✓ 已為你下載高畫質處方箋圖檔！';
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3500);
+      });
+
+      // 分享處方箋至社群
+      document.getElementById('shareCardBtn').addEventListener('click', async () => {
+        renderPrescriptionCanvas();
+        const canvas = document.getElementById('prescriptionCardCanvas');
+        const noteText = noteInput.value.trim() || '今天決定溫柔善待自己與作品，允許故事慢慢發芽。';
+        const shareText = `【拾葉書房｜寫作者的陪伴空間】\n今日處方籤：《${state.currentGacha.title}》\n🌱 我的轉化微光：「${noteText}」\n${BLESSINGS_DATA[state.blessingIndex].text}`;
+        const msg = document.getElementById('shareFeedbackMsg');
+
+        try {
+          if (navigator.canShare && canvas.toBlob) {
+            canvas.toBlob(async (blob) => {
+              if (!blob) return;
+              const file = new File([blob], 'writing_prescription.png', { type: 'image/png' });
+              if (navigator.canShare({ files: [file] })) {
+                try {
+                  await navigator.share({ title: '拾葉書房｜今日寫作處方箋', text: shareText, files: [file] });
+                  return;
+                } catch (err) {}
+              }
+              copyShareTextFallback(shareText, msg);
+            });
+            return;
+          }
+        } catch (e) {}
+        copyShareTextFallback(shareText, msg);
+      });
+
+      // 點選「結束」或「不下載結束」後，畫面淡出，換到下一關（關卡 5：臨別贈言）
+      function proceedToStage5() {
+        const formalStep = document.getElementById('formalPrescriptionStep');
+        formalStep.style.opacity = '0';
+        setTimeout(() => {
+          formalStep.style.opacity = '1';
+          goToStage(5);
+        }, 700);
+      }
+
+      document.getElementById('finishStage4Btn').addEventListener('click', proceedToStage5);
+      document.getElementById('finishWithoutDownloadBtn').addEventListener('click', proceedToStage5);
+
+      // 關卡 5 底部「再試一次」選項，讓畫面回到開頭重新開始遊戲
+      document.getElementById('tryAgainStage5Btn').addEventListener('click', () => {
+        stopStage5BlessingCycle();
+        goToStage(0);
+      });
+
+      // 頁尾版權與致謝宣告點擊展開
+      document.getElementById('footerToggleBtn').addEventListener('click', () => {
+        document.getElementById('footerCreditsModal').classList.toggle('hidden');
+      });
+    });
+
+    function copyShareTextFallback(text, msgEl) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          msgEl.textContent = '✓ 已複製處方箋分享文字！可搭配下載的圖檔分享至社群平台。';
+          msgEl.classList.remove('hidden');
+          setTimeout(() => msgEl.classList.add('hidden'), 4000);
+        }).catch(() => fallbackExecCopy(text, msgEl));
+      } else {
+        fallbackExecCopy(text, msgEl);
+      }
+    }
+
+    function fallbackExecCopy(text, msgEl) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        msgEl.textContent = '✓ 已複製處方箋分享文字！可搭配下載的圖檔分享至社群平台。';
+        msgEl.classList.remove('hidden');
+        setTimeout(() => msgEl.classList.add('hidden'), 4000);
+      } catch (e) {}
+      document.body.removeChild(ta);
+    }
+  </script>
+</body>
+</html>
